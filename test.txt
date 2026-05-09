@@ -1,0 +1,19 @@
+python -m app.seed --reset
+uvicorn app.main:app --reload
+
+Then in Postman:
+
+GET http://localhost:8000/health
+GET http://localhost:8000/debug/tables
+************
+cd backend
+.\.venv\Scripts\Activate.ps1
+python -m app.import_csv --file data/example_data.csv --reset
+
+Then check:
+
+GET http://127.0.0.1:8000/debug/tables
+*******
+cd frontend
+  npm install
+  npm run dev

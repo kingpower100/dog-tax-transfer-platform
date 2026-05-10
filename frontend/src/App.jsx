@@ -208,20 +208,19 @@ export default function App() {
   }
 
   // Called from CitizenLoginPage when a citizen card is selected
-  function selectCitizen(citizen) {
-    const context = {
-      selectedRole: "CITIZEN",
-      selectedMunicipality: "Berlin",
-      selectedMunicipalityCode: "BERLIN",
-      selectedMunicipalityId,
-      currentUserId: citizen.id,
-    };
+  async function selectCitizen(citizen) {
     setCurrentUserId(citizen.id);
-    setCurrentCitizen(citizen);
     setActivePage("citizen-home");
-    setSelectedTransferRegistrationId(null);
     setShowCitizenLogin(false);
-    saveAccessContext(context);
+    
+    // Fetch detailed profile from backend
+    try {
+      const data = await apiGet("/citizen/me", "BERLIN", demoContext({ role: "citizen", userId: citizen.id }));
+      setCurrentCitizen({ ...citizen, ...data });
+    } catch (err) {
+      console.error("Failed to load full citizen profile", err);
+      setCurrentCitizen(citizen);
+    }
   }
 
   // Called from DemoSwitcherBar to switch municipality without going through landing

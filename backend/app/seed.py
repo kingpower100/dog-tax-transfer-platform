@@ -65,16 +65,17 @@ def get_or_create_user(
 def get_or_create_tax_rule(
     db: Session,
     municipality: Municipality,
-    rule_type: str,
+    condition: str,
     dog_position: int | None,
     amount_eur: int,
     valid_from: str,
     source_url: str,
+    priority: int = 0,
 ) -> DogTaxRule:
     tax_rule = db.scalar(
         select(DogTaxRule).where(
             DogTaxRule.municipality_id == municipality.id,
-            DogTaxRule.rule_type == rule_type,
+            DogTaxRule.condition == condition,
             DogTaxRule.dog_position.is_(None)
             if dog_position is None
             else DogTaxRule.dog_position == dog_position,
@@ -86,7 +87,8 @@ def get_or_create_tax_rule(
 
     tax_rule = DogTaxRule(
         municipality=municipality,
-        rule_type=rule_type,
+        condition=condition,
+        priority=priority,
         dog_position=dog_position,
         amount_eur=amount_eur,
         valid_from=valid_from,
@@ -386,85 +388,93 @@ def seed_database(reset: bool = False) -> None:
         get_or_create_tax_rule(
             db,
             hamburg,
-            "BASIC",
+            "DEFAULT",
             None,
             90,
             "2026-01-01",
             HAMBURG_SOURCE_URL,
+            priority=0,
         )
         get_or_create_tax_rule(
             db,
             hamburg,
-            "DANGEROUS",
+            "LISTENHUND",
             None,
             600,
             "2026-01-01",
             HAMBURG_SOURCE_URL,
+            priority=50,
         )
         get_or_create_tax_rule(
             db,
             hamburg,
-            "EXEMPTION",
+            "ASSISTANCE_DOG",
             None,
             0,
             "2026-01-01",
             HAMBURG_SOURCE_URL,
+            priority=100,
+        )
+        get_or_create_tax_rule(
+            db,
+            hamburg,
+            "SHELTER_ADOPTION",
+            None,
+            48,
+            "2026-01-01",
+            HAMBURG_SOURCE_URL,
+            priority=50,
         )
         get_or_create_tax_rule(
             db,
             berlin,
-            "BASIC",
+            "DEFAULT",
             1,
             120,
             "2026-01-01",
             BERLIN_SOURCE_URL,
+            priority=0,
+        )
+        get_or_create_tax_rule(
+            db,
+            berlin,
+            "DEFAULT",
+            2,
+            180,
+            "2026-01-01",
+            BERLIN_SOURCE_URL,
+            priority=0,
+        )
+        get_or_create_tax_rule(
+            db,
+            berlin,
+            "DEFAULT",
+            3,
+            180,
+            "2026-01-01",
+            BERLIN_SOURCE_URL,
+            priority=0,
+        )
+        get_or_create_tax_rule(
+            db,
+            berlin,
+            "ASSISTANCE_DOG",
+            None,
+            0,
+            "2026-01-01",
+            BERLIN_SOURCE_URL,
+            priority=100,
         )
         for municipality, first, second, third, dangerous in [
             (hannover, 150, 276, 276, 720),
             (leverkusen, 156, 204, 252, 720),
             (freiburg, 102, 204, 204, 600),
         ]:
-            get_or_create_tax_rule(db, municipality, "BASIC", 1, first, "2026-01-01", "demo://municipal-tax-rule")
-            get_or_create_tax_rule(db, municipality, "BASIC", 2, second, "2026-01-01", "demo://municipal-tax-rule")
-            get_or_create_tax_rule(db, municipality, "BASIC", 3, third, "2026-01-01", "demo://municipal-tax-rule")
-            get_or_create_tax_rule(db, municipality, "DANGEROUS", None, dangerous, "2026-01-01", "demo://municipal-tax-rule")
-            get_or_create_tax_rule(db, municipality, "EXEMPTION", None, 0, "2026-01-01", "demo://municipal-tax-rule")
-        get_or_create_tax_rule(
-            db,
-            berlin,
-            "BASIC",
-            2,
-            180,
-            "2026-01-01",
-            BERLIN_SOURCE_URL,
-        )
-        get_or_create_tax_rule(
-            db,
-            berlin,
-            "BASIC",
-            3,
-            180,
-            "2026-01-01",
-            BERLIN_SOURCE_URL,
-        )
-        get_or_create_tax_rule(
-            db,
-            berlin,
-            "DANGEROUS",
-            None,
-            600,
-            "2026-01-01",
-            BERLIN_SOURCE_URL,
-        )
-        get_or_create_tax_rule(
-            db,
-            berlin,
-            "EXEMPTION",
-            None,
-            0,
-            "2026-01-01",
-            BERLIN_SOURCE_URL,
-        )
+            get_or_create_tax_rule(db, municipality, "DEFAULT", 1, first, "2026-01-01", "demo://municipal-tax-rule", priority=0)
+            get_or_create_tax_rule(db, municipality, "DEFAULT", 2, second, "2026-01-01", "demo://municipal-tax-rule", priority=0)
+            get_or_create_tax_rule(db, municipality, "DEFAULT", 3, third, "2026-01-01", "demo://municipal-tax-rule", priority=0)
+            get_or_create_tax_rule(db, municipality, "LISTENHUND", None, dangerous, "2026-01-01", "demo://municipal-tax-rule", priority=50)
+            get_or_create_tax_rule(db, municipality, "ASSISTANCE_DOG", None, 0, "2026-01-01", "demo://municipal-tax-rule", priority=100)
 
         hamburg_source_owner = get_or_create_owner(
             db,

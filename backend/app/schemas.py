@@ -29,6 +29,8 @@ class AnmeldungRequest(BaseModel):
     halter: HalterIn
     hund: HundIn
     assistance_dog: bool = False
+    shelter_adoption: bool = False
+    social_benefit: bool = False
     tax_reduced: bool = False
     reduction_reason: str | None = None
     liability_insurance_available: bool = False
@@ -44,6 +46,8 @@ class AnmeldungResponse(BaseModel):
     registrierungId: int
     steuerbetrag: int
     assistance_dog: bool = False
+    shelter_adoption: bool = False
+    social_benefit: bool = False
     tax_reduced: bool = False
     reduction_reason: str | None = None
     liability_insurance_available: bool = False
@@ -66,6 +70,8 @@ class UmmeldungRequest(BaseModel):
     chipnummer: str
     neue_adresse: NeueAdresseIn
     assistance_dog: bool = False
+    shelter_adoption: bool = False
+    social_benefit: bool = False
     tax_reduced: bool = False
     reduction_reason: str | None = None
     liability_insurance_available: bool = False
@@ -82,6 +88,8 @@ class UmmeldungResponse(BaseModel):
     registrierungId: int
     neuer_steuerbetrag: int
     assistance_dog: bool = False
+    shelter_adoption: bool = False
+    social_benefit: bool = False
     tax_reduced: bool = False
     reduction_reason: str | None = None
     liability_insurance_available: bool = False
@@ -307,6 +315,8 @@ class TransferOut(BaseModel):
     transfer_payload: dict | None = None
     tax_assessment: TaxAssessmentOut | None = None
     tax_preview: dict | None = None
+    payment_required: bool = False
+    tax_due_eur: int | None = None
 
 
 TransferResponse = TransferOut

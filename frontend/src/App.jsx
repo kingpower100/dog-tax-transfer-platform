@@ -3,6 +3,8 @@ import { apiGet } from "./api/client.js";
 import { clearAccessContext, loadAccessContext, saveAccessContext } from "./api/accessContext.js";
 import AppHeader from "./components/AppHeader.jsx";
 import AlertBox from "./components/AlertBox.jsx";
+import DemoSwitcherBar from "./components/DemoSwitcherBar.jsx";
+import CitizenLoginPage from "./pages/CitizenLoginPage.jsx";
 import IncomingTransfers from "./pages/IncomingTransfers.jsx";
 import OutgoingTransfers from "./pages/OutgoingTransfers.jsx";
 import TransferDogForm from "./pages/TransferDogForm.jsx";
@@ -19,18 +21,14 @@ import Transfers from "./pages/Transfers.jsx";
 import TaxRules from "./pages/TaxRules.jsx";
 import AuditLogs from "./pages/AuditLogs.jsx";
 
-const DEMO_CITIZEN_USER_ID = 1001;
-
+// Citizen role has one "home" — sub-pages are navigated from within the portal
 const rolePages = {
   CITIZEN: [
-    { id: "citizen-home", label: "Citizen Dashboard" },
-    { id: "register-dog", label: "Register a New Dog" },
-    { id: "request-transfer", label: "Move Dog to Another Municipality" },
-    { id: "transfer-status", label: "My Transfers" },
+    { id: "citizen-home", label: "Mein Portal" },
   ],
   MUNICIPALITY: [
-    { id: "outgoing-transfers", label: "Outgoing Transfers" },
-    { id: "incoming-transfers", label: "Incoming Transfers" },
+    { id: "outgoing-transfers", label: "Abmeldung (Outgoing)" },
+    { id: "incoming-transfers", label: "Anmeldung (Incoming)" },
   ],
   PLATFORM_ADMIN: [
     { id: "platform-overview", label: "Platform Overview" },
@@ -46,26 +44,41 @@ const rolePages = {
 
 export default function App() {
   const storedContext = loadAccessContext();
+
   const [selectedTenant, setSelectedTenant] = useState(storedContext?.selectedMunicipalityCode || "BERLIN");
   const [selectedMunicipalityName, setSelectedMunicipalityName] = useState(storedContext?.selectedMunicipality || "Berlin");
   const [selectedMunicipalityId, setSelectedMunicipalityId] = useState(storedContext?.selectedMunicipalityId || null);
   const [selectedRole, setSelectedRole] = useState(storedContext?.selectedRole || "CITIZEN");
-  const [activePage, setActivePage] = useState(storedContext?.selectedRole === "MUNICIPALITY" ? "outgoing-transfers" : "citizen-home");
+  const [activePage, setActivePage] = useState(() => {
+    if (storedContext?.selectedRole === "MUNICIPALITY") return "outgoing-transfers";
+    if (storedContext?.selectedRole === "PLATFORM_ADMIN") return "platform-overview";
+    return "citizen-home";
+  });
   const [showLanding, setShowLanding] = useState(!storedContext?.selectedRole);
+  const [showCitizenLogin, setShowCitizenLogin] = useState(false);
+
+  // Citizen identity — null means not logged in yet
+  const [currentUserId, setCurrentUserId] = useState(storedContext?.currentUserId || null);
+  const [currentCitizen, setCurrentCitizen] = useState(null);
+
   const [selectedChip, setSelectedChip] = useState("");
-  const [selectedTransferRegistrationId, setSelectedTransferRegistrationId] = useState(storedContext?.selectedTransferRegistrationId || null);
+  const [selectedTransferRegistrationId, setSelectedTransferRegistrationId] = useState(
+    storedContext?.selectedTransferRegistrationId || null,
+  );
   const [tenants, setTenants] = useState([]);
   const [health, setHealth] = useState(null);
   const [shellError, setShellError] = useState("");
 
-  const pages = useMemo(() => rolePages[selectedRole], [selectedRole]);
+  const pages = useMemo(() => rolePages[selectedRole] || rolePages.CITIZEN, [selectedRole]);
 
+  // Keep active page valid when role changes
   useEffect(() => {
     if (!pages?.some((page) => page.id === activePage)) {
       setActivePage(pages?.[0]?.id || "citizen-home");
     }
   }, [selectedRole]);
 
+  // Load health + tenants on mount
   useEffect(() => {
     let isMounted = true;
 
@@ -74,14 +87,13 @@ export default function App() {
         setShellError("");
         const [healthData, tenantsData] = await Promise.all([apiGet("/health"), apiGet("/mandanten")]);
 
-        if (!isMounted) {
-          return;
-        }
+        if (!isMounted) return;
 
         setHealth(healthData);
         setTenants(tenantsData || []);
+
         if (!selectedMunicipalityId) {
-          const berlin = tenantsData?.find((tenant) => tenant.code === "BERLIN");
+          const berlin = tenantsData?.find((t) => t.code === "BERLIN");
           if (berlin) {
             setSelectedTenant(berlin.code);
             setSelectedMunicipalityName(berlin.name);
@@ -89,10 +101,7 @@ export default function App() {
           }
         }
       } catch (err) {
-        if (!isMounted) {
-          return;
-        }
-
+        if (!isMounted) return;
         setHealth({ status: "offline" });
         setTenants([]);
         setShellError(err.message);
@@ -100,10 +109,7 @@ export default function App() {
     }
 
     loadShellData();
-
-    return () => {
-      isMounted = false;
-    };
+    return () => { isMounted = false; };
   }, []);
 
   function renderPage() {
@@ -114,7 +120,8 @@ export default function App() {
       selectedMunicipalityId,
       selectedChip,
       setSelectedChip,
-      currentUserId: DEMO_CITIZEN_USER_ID,
+      currentUserId,
+      currentCitizen,
       selectedTransferRegistrationId,
       setSelectedTransferRegistrationId,
       setActivePage,
@@ -130,7 +137,14 @@ export default function App() {
       case "request-transfer":
         return <TransferDogForm {...common} />;
       case "transfer-status":
-        return <TransferStatus selectedTenant={selectedTenant} selectedMunicipalityId={selectedMunicipalityId} tenants={tenants} />;
+        return (
+          <TransferStatus
+            selectedTenant={selectedTenant}
+            selectedMunicipalityId={selectedMunicipalityId}
+            tenants={tenants}
+            currentUserId={currentUserId}
+          />
+        );
       case "incoming-transfers":
         return <IncomingTransfers {...common} />;
       case "outgoing-transfers":
@@ -160,11 +174,10 @@ export default function App() {
 
   function openRole(role, municipality = null) {
     if (role === "CITIZEN") {
-      const context = { selectedRole: "CITIZEN", selectedMunicipality: "Berlin", selectedMunicipalityCode: "BERLIN", selectedMunicipalityId, currentUserId: DEMO_CITIZEN_USER_ID };
       setSelectedRole("CITIZEN");
-      setActivePage("citizen-home");
-      setSelectedTransferRegistrationId(null);
-      saveAccessContext(context);
+      setShowLanding(false);
+      setShowCitizenLogin(true); // <— show citizen login instead of portal directly
+      return;
     }
 
     if (role === "MUNICIPALITY" && municipality) {
@@ -178,7 +191,7 @@ export default function App() {
       setSelectedTenant(municipality.code);
       setSelectedMunicipalityName(municipality.name);
       setSelectedMunicipalityId(municipality.id);
-      setActivePage("incoming-transfers");
+      setActivePage("outgoing-transfers");
       saveAccessContext(context);
     }
 
@@ -194,17 +207,72 @@ export default function App() {
     setShowLanding(false);
   }
 
+  // Called from CitizenLoginPage when a citizen card is selected
+  function selectCitizen(citizen) {
+    const context = {
+      selectedRole: "CITIZEN",
+      selectedMunicipality: "Berlin",
+      selectedMunicipalityCode: "BERLIN",
+      selectedMunicipalityId,
+      currentUserId: citizen.id,
+    };
+    setCurrentUserId(citizen.id);
+    setCurrentCitizen(citizen);
+    setActivePage("citizen-home");
+    setSelectedTransferRegistrationId(null);
+    setShowCitizenLogin(false);
+    saveAccessContext(context);
+  }
+
+  // Called from DemoSwitcherBar to switch municipality without going through landing
+  function switchMunicipality(tenant) {
+    const context = {
+      selectedRole: "MUNICIPALITY",
+      selectedMunicipality: tenant.name,
+      selectedMunicipalityCode: tenant.code,
+      selectedMunicipalityId: tenant.id,
+    };
+    setSelectedTenant(tenant.code);
+    setSelectedMunicipalityName(tenant.name);
+    setSelectedMunicipalityId(tenant.id);
+    setActivePage("outgoing-transfers");
+    saveAccessContext(context);
+  }
+
   function switchAccess() {
     clearAccessContext();
+    setCurrentUserId(null);
+    setCurrentCitizen(null);
+    setShowCitizenLogin(false);
     setShowLanding(true);
   }
+
+  // --- Render routing ---
 
   if (showLanding) {
     return <LandingPage onOpenRole={openRole} municipalities={tenants} />;
   }
 
+  if (showCitizenLogin) {
+    return (
+      <CitizenLoginPage
+        onSelectCitizen={selectCitizen}
+        onBack={switchAccess}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
+      {/* Municipality isolation debug bar — only for MUNICIPALITY role */}
+      {selectedRole === "MUNICIPALITY" ? (
+        <DemoSwitcherBar
+          tenants={tenants}
+          activeMunicipalityId={selectedMunicipalityId}
+          onSelectMunicipality={switchMunicipality}
+        />
+      ) : null}
+
       <AppHeader
         activePage={activePage}
         health={health}
@@ -217,7 +285,7 @@ export default function App() {
 
       <main className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
         {shellError ? (
-          <AlertBox type="warning" title="Backend status unavailable">
+          <AlertBox type="warning" title="Backend nicht erreichbar / Backend unavailable">
             {shellError}
           </AlertBox>
         ) : null}

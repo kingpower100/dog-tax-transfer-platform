@@ -128,11 +128,11 @@ class Dog(Base):
 class DogTaxRule(Base):
     __tablename__ = "dog_tax_rules"
     __table_args__ = (
-        CheckConstraint("rule_type IN ('BASIC', 'DANGEROUS', 'EXEMPTION')", name="ck_tax_rules_rule_type"),
         CheckConstraint("amount_eur >= 0", name="ck_tax_rules_amount_eur"),
+        CheckConstraint("priority >= 0", name="ck_tax_rules_priority"),
         UniqueConstraint(
             "municipality_id",
-            "rule_type",
+            "condition",
             "dog_position",
             "valid_from",
             name="uq_tax_rule_natural_key",
@@ -141,9 +141,11 @@ class DogTaxRule(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     municipality_id = Column(Integer, ForeignKey("municipalities.id"), nullable=False)
-    rule_type = Column(Text, nullable=False)
+    condition = Column(Text, nullable=False, default="DEFAULT", server_default="DEFAULT")
+    priority = Column(Integer, nullable=False, default=0, server_default="0")
     dog_position = Column(Integer, nullable=True)
     amount_eur = Column(Integer, nullable=False)
+    max_months = Column(Integer, nullable=True)
     valid_from = Column(Text, nullable=False)
     valid_to = Column(Text, nullable=True)
     source_url = Column(Text, nullable=False)

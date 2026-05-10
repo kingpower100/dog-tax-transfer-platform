@@ -7,40 +7,54 @@ export default function StatusBadge({ value }) {
   const normalized = raw.trim().toLowerCase().replaceAll("_", " ");
 
   const tone = (() => {
-    if (["online", "ok", "valid", "completed", "active"].includes(normalized)) {
+    // Terminal success states
+    if (["online", "ok", "valid", "completed", "active", "transferred", "received by target", "released by source"].includes(normalized)) {
       return "bg-emerald-50 text-emerald-800 ring-emerald-200";
     }
 
-    if (["approved"].includes(normalized)) {
+    // Approval / approved
+    if (["approved", "source finance approved", "target finance approved"].includes(normalized)) {
       return "bg-blue-50 text-blue-800 ring-blue-200";
     }
 
-    if (["transferred", "received by target", "released by source"].includes(normalized)) {
-      return "bg-emerald-50 text-emerald-800 ring-emerald-200";
+    // In-review / verification steps
+    if (["abmeldung generated", "source finance verified", "target finance verified", "in review"].includes(normalized)) {
+      return "bg-indigo-50 text-indigo-800 ring-indigo-200";
     }
 
-    if (["requires consent"].includes(normalized)) {
+    // Consent / pending source approval
+    if (["requires consent", "consent given", "citizen submitted", "pending source approval"].includes(normalized)) {
       return "bg-teal-50 text-teal-800 ring-teal-200";
     }
 
+    // Draft / pending
     if (["pending", "draft"].includes(normalized)) {
       return "bg-amber-50 text-amber-900 ring-amber-200";
     }
 
-    if (["rejected", "invalid", "offline"].includes(normalized)) {
+    // Rejected / error
+    if (["rejected", "source rejected", "target rejected", "invalid", "offline"].includes(normalized)) {
       return "bg-red-50 text-red-800 ring-red-200";
     }
 
-    if (["normal"].includes(normalized)) {
+    // Cancelled / deregistered / neutral
+    if (["cancelled", "deregistered", "normal"].includes(normalized)) {
       return "bg-slate-100 text-slate-700 ring-slate-200";
     }
 
+    // Listenhund (dangerous breed – warning)
     if (["listenhund"].includes(normalized)) {
-      return "bg-amber-50 text-amber-900 ring-amber-200";
+      return "bg-orange-50 text-orange-800 ring-orange-200";
     }
 
-    if (normalized === "deregistered") {
-      return "bg-slate-100 text-slate-700 ring-slate-200";
+    // Target accepted / finalizing
+    if (["target accepted"].includes(normalized)) {
+      return "bg-cyan-50 text-cyan-800 ring-cyan-200";
+    }
+
+    // Citizen service / role badges
+    if (["citizen service", "municipality officer", "platform admin"].includes(normalized)) {
+      return "bg-blue-50 text-blue-700 ring-blue-200";
     }
 
     return "bg-slate-100 text-slate-700 ring-slate-200";

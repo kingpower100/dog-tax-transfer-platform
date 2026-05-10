@@ -12,6 +12,6 @@ def resolve_tenant(db: Session, x_mandant_id: str | None) -> Municipality:
     tenant_code = x_mandant_id.strip().upper()
     municipality = db.scalar(select(Municipality).where(Municipality.code == tenant_code))
     if municipality is None:
-        raise HTTPException(status_code=404, detail="Unknown tenant")
+        raise HTTPException(status_code=404, detail="Municipality tenant not found")
 
     return municipality

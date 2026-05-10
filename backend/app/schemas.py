@@ -9,7 +9,7 @@ class HalterIn(BaseModel):
     nachname: str
     geburtsdatum: str | None = None
     strasse: str
-    hausnummer: str
+    hausnummer: int
     plz: str
     ort: str
     email: str | None = None
@@ -20,9 +20,9 @@ class HundIn(BaseModel):
     name: str
     chipnummer: str | None = None
     rasse: str
+    typ: Literal["NORMAL", "LISTENHUND"]
     geburtsdatum: str | None = None
     geschlecht: str | None = None
-    typ: Literal["NORMAL", "LISTENHUND"]
 
 
 class AnmeldungRequest(BaseModel):
@@ -37,26 +37,16 @@ class AnmeldungRequest(BaseModel):
 
 class AnmeldungResponse(BaseModel):
     status: int
-    message: str
-    mandant: str
     personId: int
     hundId: int
-    registrierungId: int
     steuerbetrag: int
-    assistance_dog: bool = False
-    tax_reduced: bool = False
-    reduction_reason: str | None = None
-    liability_insurance_available: bool = False
-    insurance_policy_number: str | None = None
     waehrung: str
     veranlagungsjahr: int
-    dog_position: int
-    tax_rule_id: int
 
 
 class NeueAdresseIn(BaseModel):
     strasse: str
-    hausnummer: str
+    hausnummer: int
     plz: str
     ort: str
 
@@ -74,22 +64,12 @@ class UmmeldungRequest(BaseModel):
 
 class UmmeldungResponse(BaseModel):
     status: int
-    message: str
     uebernommen_von: str
-    ziel_mandant: str
     personId: int
     hundId: int
-    registrierungId: int
     neuer_steuerbetrag: int
-    assistance_dog: bool = False
-    tax_reduced: bool = False
-    reduction_reason: str | None = None
-    liability_insurance_available: bool = False
-    insurance_policy_number: str | None = None
     waehrung: str
     veranlagungsjahr: int
-    dog_position: int
-    tax_rule_id: int
     protokoll_id: int
 
 

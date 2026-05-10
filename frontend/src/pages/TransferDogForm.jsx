@@ -29,12 +29,12 @@ const requiredFields = [
 const fieldClassName =
   "h-12 w-full rounded-xl border border-slate-300 px-4 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100";
 
-export default function TransferDogForm({ currentUserId = DEMO_CITIZEN_USER_ID, selectedMunicipalityId, selectedTransferRegistrationId, tenants = [] }) {
+export default function TransferDogForm({ currentUserId = DEMO_CITIZEN_USER_ID, selectedMunicipalityId, selectedTransferRegistrationId, tenants = [], sourceMunicipality, destinationMunicipality }) {
   const sourceMunicipalityId = selectedMunicipalityId || tenantId(tenants, SOURCE_MUNICIPALITY_CODE);
   const registrationId = selectedTransferRegistrationId || SOURCE_REGISTRATION_ID;
   const [formData, setFormData] = useState(null);
   const [form, setForm] = useState({
-    target_municipality_id: "",
+    target_municipality_id: destinationMunicipality?.id?.toString() || "",
     target_street: "",
     target_house_number: "",
     target_postal_code: "",
@@ -60,7 +60,7 @@ export default function TransferDogForm({ currentUserId = DEMO_CITIZEN_USER_ID, 
       const data = await apiGet(`/registrations/${registrationId}/transfer-form-data`, null, citizenContext);
       setFormData(data);
       const allowedTargets = (data.target_municipalities || []).filter((tenant) => tenant.id !== data.source_municipality?.id);
-      const preferredTarget = allowedTargets.find((tenant) => tenant.code === TARGET_MUNICIPALITY_CODE);
+      const preferredTarget = destinationMunicipality ? allowedTargets.find((tenant) => tenant.id === destinationMunicipality.id) : allowedTargets.find((tenant) => tenant.code === TARGET_MUNICIPALITY_CODE);
       const firstTarget = allowedTargets?.[0]?.id || "";
       setForm((current) => ({ ...current, target_municipality_id: current.target_municipality_id || preferredTarget?.id || firstTarget }));
     } catch (err) {
@@ -167,7 +167,7 @@ export default function TransferDogForm({ currentUserId = DEMO_CITIZEN_USER_ID, 
                 <span className="mb-1 block text-xs font-black uppercase text-slate-500">Target municipality</span>
                 <select value={form.target_municipality_id} onChange={(event) => setField("target_municipality_id", event.target.value)} required>
                   <option value="">Choose target</option>
-                  {formData?.target_municipalities?.filter((tenant) => [TARGET_MUNICIPALITY_CODE].includes(tenant.code)).map((tenant) => (
+                  {formData?.target_municipalities?.map((tenant) => (
                     <option key={tenant.id} value={tenant.id}>{tenant.name}</option>
                   ))}
                 </select>

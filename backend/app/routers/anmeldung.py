@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.schemas import AnmeldungRequest, AnmeldungResponse
+from app.services.anmeldung_service import create_anmeldung
 from app.services.tenant_service import resolve_tenant
-from app.services.transfer_service import create_anmeldung
 
 
 router = APIRouter()

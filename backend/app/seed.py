@@ -419,6 +419,10 @@ def seed_database(reset: bool = False) -> None:
             "2026-01-01",
             BERLIN_SOURCE_URL,
         )
+        # Add specific Hannover and Leverkusen tax rules as required
+        get_or_create_tax_rule(db, hannover, "BASIC", None, 96, "2026-01-01", "demo://municipal-tax-rule")
+        get_or_create_tax_rule(db, leverkusen, "BASIC", None, 132, "2026-01-01", "demo://municipal-tax-rule")
+        
         for municipality, first, second, third, dangerous in [
             (hannover, 132, 240, 240, 600),
             (leverkusen, 156, 204, 252, 720),

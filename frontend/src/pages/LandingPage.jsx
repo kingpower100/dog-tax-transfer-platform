@@ -1,4 +1,5 @@
 import FeatureCard from "../components/FeatureCard.jsx";
+import MunicipalitySelector from "../components/MunicipalitySelector.jsx";
 import {
   AuditIcon,
   CalculatorIcon,
@@ -29,6 +30,11 @@ export default function LandingPage({ onOpenRole, municipalities = [] }) {
   const visibleMunicipalities = municipalities.filter((municipality) =>
     ["BERLIN", "HANNOVER"].includes(municipality.code),
   );
+
+  function handleMunicipalitySelect({ source, destination }) {
+    // Navigate to citizen transfer flow with selected municipalities
+    onOpenRole("CITIZEN", { sourceMunicipality: source, destinationMunicipality: destination });
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
@@ -100,6 +106,13 @@ export default function LandingPage({ onOpenRole, municipalities = [] }) {
             <p className="mt-6 max-w-3xl text-lg font-medium leading-8 text-slate-100 sm:text-xl">
               Move your dog tax registration from one city to another without submitting the same dog and owner information twice.
             </p>
+
+            <div className="mt-10">
+              <MunicipalitySelector 
+                municipalities={municipalities} 
+                onContinue={handleMunicipalitySelect}
+              />
+            </div>
 
             <div className="mt-10 grid w-full max-w-4xl gap-3 sm:grid-cols-3">
               <button

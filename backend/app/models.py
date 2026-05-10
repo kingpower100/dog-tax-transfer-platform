@@ -163,6 +163,9 @@ class Registration(Base):
             "status IN ('active', 'transferred', 'deregistered')",
             name="ck_registrations_status",
         ),
+        CheckConstraint("assistance_dog IN (0, 1)", name="ck_registrations_assistance_dog"),
+        CheckConstraint("tax_reduced IN (0, 1)", name="ck_registrations_tax_reduced"),
+        CheckConstraint("liability_insurance_available IN (0, 1)", name="ck_registrations_liability_insurance_available"),
     )
 
     id = Column(Integer, primary_key=True, autoincrement=True)

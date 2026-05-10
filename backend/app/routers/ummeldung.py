@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, Header
-from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.schemas import UmmeldungRequest, UmmeldungResponse
+from app.services.ummeldung_service import create_ummeldung
+from app.services.tenant_service import resolve_tenant
 
 
 router = APIRouter()
@@ -15,4 +16,5 @@ def ummeldung(
     x_mandant_id: str | None = Header(default=None, alias="X-Mandant-ID"),
     db: Session = Depends(get_db),
 ):
-    raise HTTPException(status_code=410, detail="Legacy direct transfer endpoint is disabled. Use /transfer-requests workflow.")
+    target_municipality = resolve_tenant(db, x_mandant_id)
+    return create_ummeldung(db, target_municipality, request)

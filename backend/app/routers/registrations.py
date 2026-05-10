@@ -156,7 +156,7 @@ def current_citizen_tax_receipt_preview(
                 "dog_type": registration.dog.dog_type,
                 "registration_id": registration.id,
                 "calculated_amount_eur": calculated["amount_eur"],
-                "dog_position": calculated["dog_position"],
+                "dog_position": registration.dog_position,
                 "tax_rule_id": calculated["tax_rule_id"],
                 "tax_rule_reference": _tax_rule_reference(rule),
             }

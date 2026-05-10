@@ -39,6 +39,15 @@ export function SendIcon({ className = "h-5 w-5" }) {
   );
 }
 
+export function ArrowRightIcon({ className = "h-5 w-5" }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} {...base}>
+      <path d="M5 12h14" />
+      <path d="m13 6 6 6-6 6" />
+    </svg>
+  );
+}
+
 export function CheckBuildingIcon({ className = "h-5 w-5" }) {
   return (
     <svg viewBox="0 0 24 24" className={className} {...base}>
@@ -94,4 +103,3 @@ export function AuditIcon({ className = "h-5 w-5" }) {
     </svg>
   );
 }
-

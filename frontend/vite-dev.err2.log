@@ -1,0 +1,13 @@
+[2m10:35:32 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mSyntaxError[22m: The requested module '/src/components/Icons.jsx' does not provide an export named 'ArrowRightIcon'
+[39m
+[2m10:35:36 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mSyntaxError[22m: The requested module '/src/components/Icons.jsx' does not provide an export named 'ArrowRightIcon'
+[39m
+[2m10:35:37 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mSyntaxError[22m: The requested module '/src/components/Icons.jsx' does not provide an export named 'ArrowRightIcon'
+[39m
+[2m10:35:38 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mSyntaxError[22m: The requested module '/src/components/Icons.jsx' does not provide an export named 'ArrowRightIcon'
+[39m
+[2m10:35:38 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mSyntaxError[22m: The requested module '/src/components/Icons.jsx' does not provide an export named 'ArrowRightIcon'
+[39m
+[2m10:35:45 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mSyntaxError[22m: The requested module '/src/components/Icons.jsx' does not provide an export named 'ArrowRightIcon'
+[39m
+[2m10:46:07 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/pages/IncomingTransfers.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)

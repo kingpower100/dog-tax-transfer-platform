@@ -21,8 +21,8 @@ const rolePages = {
     { id: "transfer-status", label: "My Transfers" },
   ],
   MUNICIPALITY: [
-    { id: "outgoing-transfers", label: "Outgoing Transfers" },
-    { id: "incoming-transfers", label: "Incoming Transfers" },
+    { id: "incoming-transfers", label: "Target Municipality" },
+    { id: "outgoing-transfers", label: "Source Municipality" },
   ],
 };
 
@@ -32,7 +32,7 @@ export default function App() {
   const [selectedMunicipalityName, setSelectedMunicipalityName] = useState(storedContext?.selectedMunicipality || "Berlin");
   const [selectedMunicipalityId, setSelectedMunicipalityId] = useState(storedContext?.selectedMunicipalityId || null);
   const [selectedRole, setSelectedRole] = useState(storedContext?.selectedRole || "CITIZEN");
-  const [activePage, setActivePage] = useState(storedContext?.selectedRole === "MUNICIPALITY" ? "outgoing-transfers" : "citizen-home");
+  const [activePage, setActivePage] = useState(storedContext?.selectedRole === "MUNICIPALITY" ? "incoming-transfers" : "citizen-home");
   const [showLanding, setShowLanding] = useState(!storedContext?.selectedRole);
   const [selectedChip, setSelectedChip] = useState("");
   const [selectedTransferRegistrationId, setSelectedTransferRegistrationId] = useState(storedContext?.selectedTransferRegistrationId || null);
@@ -110,7 +110,7 @@ export default function App() {
       case "register-dog":
         return <RegisterDog {...common} />;
       case "request-transfer":
-        return <TransferDogForm {...common} />;
+        return <TransferDogForm {...common} sourceMunicipality={storedContext?.sourceMunicipality} destinationMunicipality={storedContext?.destinationMunicipality} />;
       case "transfer-status":
         return <TransferStatus selectedTenant={selectedTenant} selectedMunicipalityId={selectedMunicipalityId} tenants={tenants} />;
       case "incoming-transfers":
@@ -122,26 +122,47 @@ export default function App() {
     }
   }
 
-  function openRole(role, municipality = null) {
+  function openRole(role, options = null) {
     if (role === "CITIZEN") {
-      const context = { selectedRole: "CITIZEN", selectedMunicipality: "Berlin", selectedMunicipalityCode: "BERLIN", selectedMunicipalityId, currentUserId: DEMO_CITIZEN_USER_ID };
-      setSelectedRole("CITIZEN");
-      setActivePage("citizen-home");
-      setSelectedTransferRegistrationId(null);
-      saveAccessContext(context);
+      // Handle municipality selection from landing page
+      if (options && options.sourceMunicipality && options.destinationMunicipality) {
+        const context = { 
+          selectedRole: "CITIZEN", 
+          selectedMunicipality: options.sourceMunicipality.name, 
+          selectedMunicipalityCode: options.sourceMunicipality.code,
+          selectedMunicipalityId: options.sourceMunicipality.id,
+          sourceMunicipality: options.sourceMunicipality,
+          destinationMunicipality: options.destinationMunicipality,
+          currentUserId: DEMO_CITIZEN_USER_ID 
+        };
+        setSelectedRole("CITIZEN");
+        setSelectedTenant(options.sourceMunicipality.code);
+        setSelectedMunicipalityName(options.sourceMunicipality.name);
+        setSelectedMunicipalityId(options.sourceMunicipality.id);
+        setActivePage("request-transfer");
+        setSelectedTransferRegistrationId(null);
+        saveAccessContext(context);
+      } else {
+        // Default citizen access
+        const context = { selectedRole: "CITIZEN", selectedMunicipality: "Berlin", selectedMunicipalityCode: "BERLIN", selectedMunicipalityId, currentUserId: DEMO_CITIZEN_USER_ID };
+        setSelectedRole("CITIZEN");
+        setActivePage("citizen-home");
+        setSelectedTransferRegistrationId(null);
+        saveAccessContext(context);
+      }
     }
 
-    if (role === "MUNICIPALITY" && municipality) {
+    if (role === "MUNICIPALITY" && options) {
       const context = {
         selectedRole: "MUNICIPALITY",
-        selectedMunicipality: municipality.name,
-        selectedMunicipalityCode: municipality.code,
-        selectedMunicipalityId: municipality.id,
+        selectedMunicipality: options.name,
+        selectedMunicipalityCode: options.code,
+        selectedMunicipalityId: options.id,
       };
       setSelectedRole("MUNICIPALITY");
-      setSelectedTenant(municipality.code);
-      setSelectedMunicipalityName(municipality.name);
-      setSelectedMunicipalityId(municipality.id);
+      setSelectedTenant(options.code);
+      setSelectedMunicipalityName(options.name);
+      setSelectedMunicipalityId(options.id);
       setActivePage("incoming-transfers");
       saveAccessContext(context);
     }

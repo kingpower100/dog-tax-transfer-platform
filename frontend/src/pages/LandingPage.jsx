@@ -137,7 +137,7 @@ export default function LandingPage({ onOpenRole, municipalities = [] }) {
             </p>
 
             {/* Role selection cards */}
-            <div className="mt-10 grid w-full max-w-3xl gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-10 grid w-full max-w-xl gap-3 sm:grid-cols-2">
               {/* Citizen */}
               <button
                 type="button"
@@ -148,6 +148,30 @@ export default function LandingPage({ onOpenRole, municipalities = [] }) {
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-emerald-200 transition group-hover:bg-white/20">
                     <UserIcon className="h-6 w-6" />
                   </div>
+                  <div>
+                    <h3 className="text-base font-black text-white">Citizen Portal</h3>
+                    <p className="mt-0.5 text-xs leading-5 text-white/75">Register or transfer your dog.</p>
+                  </div>
+                </div>
+              </button>
+
+              {/* Authority Portal */}
+              <button
+                type="button"
+                onClick={() => onOpenRole("AUTHORITY_SELECT")}
+                className="group rounded-2xl border border-white/20 bg-white/10 p-5 text-left shadow-lg backdrop-blur-sm transition hover:border-purple-300/60 hover:bg-white/15"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-purple-200 transition group-hover:bg-white/20">
+                    <CheckBuildingIcon className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-black text-white">Authority Portal</h3>
+                    <p className="mt-0.5 text-xs leading-5 text-white/75">Manage transfers & administrative overview.</p>
+                  </div>
+                </div>
+              </button>
+            </div>
                   <div>
                     <h3 className="text-base font-black text-white">Citizen</h3>
                     <p className="mt-0.5 text-xs leading-5 text-white/75">Register or transfer your dog.</p>

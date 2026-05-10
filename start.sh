@@ -7,10 +7,10 @@ echo "🚀 Starting Once-Only Dog Tax Transfer Platform..."
 # 1. Setup Backend
 echo "📦 Setting up backend..."
 cd backend
-if [ -d ".venv" ]; then
-    source .venv/bin/activate
-elif [ -d ".venv_linux" ]; then
+if [ -d ".venv_linux" ]; then
     source .venv_linux/bin/activate
+elif [ -d "venv" ]; then
+    source venv/bin/activate
 else
     python3 -m venv .venv_linux
     source .venv_linux/bin/activate
@@ -19,12 +19,12 @@ pip install -q -r requirements.txt
 
 # 2. Initialize Database
 echo "🗄️ Initializing and seeding database..."
-python -m app.seed --reset
-python -m app.import_csv --file data/example_data.csv
+python3 -m app.seed --reset
+python3 -m app.import_csv --file data/example_data.csv
 
 # 3. Start Backend in background
 echo "⚡ Starting FastAPI backend on http://127.0.0.1:8000..."
-uvicorn app.main:app --reload --port 8000 > uvicorn.log 2>&1 &
+python3 -m uvicorn app.main:app --reload --port 8000 > uvicorn.log 2>&1 &
 BACKEND_PID=$!
 
 # 4. Setup Frontend

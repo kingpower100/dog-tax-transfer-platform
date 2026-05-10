@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+pytest-cache-files-*/
+.venv/
+venv/
+
+# Local application runtime
+*.log
+backend/*-dev*.log
+frontend/*-dev*.log
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Node and build caches
+node_modules/
+frontend/node_modules/
+frontend/.vite/
+frontend/node_modules/.vite/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Local database copies
+*.sqlite
+*.sqlite3

@@ -87,9 +87,10 @@ function GroupPill({ status }) {
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
 function ProfileCard({ citizen }) {
-  const name = citizen?.user?.name || "Bürger";
-  const email = citizen?.user?.email || "—";
-  const owner = citizen?.owner;
+  if (!citizen) return null;
+  const name = citizen.user?.name || "Bürger";
+  const email = citizen.user?.email || "—";
+  const owner = citizen.owner;
   const address = owner
     ? `${owner.street} ${owner.house_number}, ${owner.postal_code} ${owner.city}`
     : "—";

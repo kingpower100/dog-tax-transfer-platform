@@ -281,6 +281,7 @@ export default function App() {
         selectedTenant={selectedMunicipalityName}
         setActivePage={setActivePage}
         setShowLanding={switchAccess}
+        currentCitizen={currentCitizen}
       />
 
       <main className="mx-auto max-w-7xl px-4 py-8 lg:px-6">

@@ -26,7 +26,7 @@ export default function AuditLogs({ mode = "logs", selectedTenant, tenants = [] 
     setError("");
     try {
       setRows(
-        await apiGet("/audit-logs", null, {
+        await apiGet("/audit-logs", selectedTenant, {
           current_role: mode === "verify" ? "platform_admin" : "municipality_admin",
           current_municipality_id: municipalityId,
         }),
@@ -39,7 +39,7 @@ export default function AuditLogs({ mode = "logs", selectedTenant, tenants = [] 
   async function verify() {
     setError("");
     try {
-      setVerification(await apiGet("/audit-logs/verify", null, { current_role: "platform_admin" }));
+      setVerification(await apiGet("/audit-logs/verify", selectedTenant, { current_role: "platform_admin" }));
     } catch (err) {
       setError(err.message);
     }

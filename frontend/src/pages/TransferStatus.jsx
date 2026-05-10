@@ -304,11 +304,11 @@ function DetailRow({ label, value }) {
   );
 }
 
-export default function TransferStatus({ selectedTenant, selectedMunicipalityId, tenants = [] }) {
+export default function TransferStatus({ selectedTenant, selectedMunicipalityId, tenants = [], currentUserId }) {
   const municipalityId = selectedMunicipalityId || tenants.find((tenant) => tenant.code === selectedTenant)?.id || null;
   const citizenContext = useMemo(
-    () => demoContext({ role: "citizen", municipalityId, userId: DEMO_CITIZEN_USER_ID }),
-    [municipalityId],
+    () => demoContext({ role: "citizen", municipalityId, userId: currentUserId }),
+    [municipalityId, currentUserId],
   );
   const [rows, setRows] = useState([]);
   const [selectedId, setSelectedId] = useState("");
@@ -321,7 +321,7 @@ export default function TransferStatus({ selectedTenant, selectedMunicipalityId,
     if (!municipalityId) return;
     setError("");
     try {
-      const transferData = await apiGet("/transfer-requests", null, citizenContext);
+      const transferData = await apiGet("/transfer-requests", selectedTenant, citizenContext);
       setRows(transferData);
       setSelectedId((current) => (current && transferData.some((transfer) => String(transfer.id) === String(current)) ? current : String(transferData[0]?.id || "")));
     } catch (err) {
@@ -334,7 +334,7 @@ export default function TransferStatus({ selectedTenant, selectedMunicipalityId,
     setDocument(null);
     setDocumentError("");
     try {
-      setDocument(await apiGet(`/transfers/${transferId}/abmeldung-document`, null, citizenContext));
+      setDocument(await apiGet(`/transfers/${transferId}/abmeldung-document`, selectedTenant, citizenContext));
     } catch (err) {
       setDocumentError(err.message);
     }
@@ -522,6 +522,16 @@ export default function TransferStatus({ selectedTenant, selectedMunicipalityId,
                 </p>
               )}
             </SectionCard>
+
+            {selectedTransfer.payment_required ? (
+              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
+                <p className="font-black text-amber-900">Tax Assessment Due</p>
+                <p className="mt-2 text-2xl font-black text-amber-800">€{selectedTransfer.tax_due_eur} / year</p>
+                <p className="mt-3 text-sm text-amber-700">
+                  Your transfer has been approved by {selectedTransfer.to_municipality}. Your new dog tax has been assessed. Please contact the municipality to complete payment.
+                </p>
+              </div>
+            ) : null}
 
             {isRejected ? (
               <SectionCard title="Rejection Reason">

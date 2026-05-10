@@ -126,12 +126,16 @@ export default function RegisterDog({ selectedTenant, tenants = [], currentUserI
     setSubmitting(true);
     try {
       setResult(
-        await apiPost("/dogs/register", {
-          ...context,
-          municipality_id: municipalityId,
-          owner: form.owner,
-          dog: { ...form.dog, insurance_number: form.insuranceNumber.trim() },
-        }),
+        await apiPost(
+          "/dogs/register",
+          {
+            ...context,
+            municipality_id: municipalityId,
+            owner: form.owner,
+            dog: { ...form.dog, insurance_number: form.insuranceNumber.trim() },
+          },
+          selectedTenant,
+        ),
       );
     } catch (err) {
       setError(err.message);

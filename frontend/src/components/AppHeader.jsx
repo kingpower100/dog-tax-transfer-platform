@@ -17,10 +17,11 @@ export default function AppHeader({
   selectedRole,
   selectedTenant,
   setShowLanding,
+  currentCitizen,
 }) {
   const roleLabel =
     selectedRole === "CITIZEN"
-      ? "Bürger"
+      ? currentCitizen ? `👤 ${currentCitizen.name}` : "Bürger"
       : selectedRole === "PLATFORM_ADMIN"
         ? "Platform Admin"
         : "Sachbearbeiter";

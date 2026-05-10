@@ -1,70 +1,52 @@
 import { useState } from "react";
-import { ChevronDownIcon, ChevronUpIcon } from "./Icons.jsx";
+import { ChevronDownIcon, ChevronUpIcon, LandmarkIcon } from "./Icons.jsx";
 
-export default function DemoSwitcherBar({ tenants = [], activeMunicipalityId, onSelectMunicipality }) {
-  const [collapsed, setCollapsed] = useState(false);
-
-  if (!tenants.length) return null;
+export default function DemoSwitcherBar({ tenants, activeMunicipalityId, onSelectMunicipality }) {
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
-    <div className="border-b border-amber-200 bg-amber-50">
-      <div className="mx-auto max-w-7xl px-4 lg:px-6">
-        {/* Header row */}
-        <div className="flex items-center justify-between gap-4 py-2">
-          <div className="flex items-center gap-2 text-xs font-black text-amber-800">
-            <span aria-hidden="true">🏛</span>
-            <span className="uppercase tracking-wide">Demo Switcher</span>
-            <span className="hidden font-semibold text-amber-600 sm:inline">
-              · Switching between isolated municipality tenants
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setCollapsed((c) => !c)}
-            className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-black text-amber-700 transition hover:bg-amber-100"
-            aria-expanded={!collapsed}
-            aria-label={collapsed ? "Expand municipality switcher" : "Collapse municipality switcher"}
-          >
-            {collapsed ? (
-              <>
-                Show <ChevronDownIcon className="h-3.5 w-3.5" />
-              </>
-            ) : (
-              <>
-                Hide <ChevronUpIcon className="h-3.5 w-3.5" />
-              </>
-            )}
-          </button>
+    <div className="border-b border-amber-200 bg-amber-50 px-4 py-2 text-amber-900 transition-all duration-300">
+      <div className="mx-auto flex max-w-7xl items-center justify-between">
+        <div className="flex items-center gap-2">
+          <LandmarkIcon className="h-4 w-4" />
+          <span className="text-[10px] font-black uppercase tracking-widest opacity-70">
+            Demo: Tenant Isolation Debug
+          </span>
         </div>
 
-        {/* Tenant pills */}
-        {!collapsed && (
-          <div className="flex flex-wrap gap-2 pb-3">
-            {tenants.map((tenant) => {
-              const active = tenant.id === activeMunicipalityId;
-              return (
-                <button
-                  key={tenant.id}
-                  type="button"
-                  onClick={() => onSelectMunicipality(tenant)}
-                  className={`rounded-full border px-4 py-1.5 text-xs font-black transition ${
-                    active
-                      ? "border-amber-500 bg-amber-500 text-white shadow-sm"
-                      : "border-amber-300 bg-white text-amber-800 hover:border-amber-400 hover:bg-amber-100"
-                  }`}
-                >
-                  {active ? "● " : ""}
-                  {tenant.name}
-                  <span className="ml-1.5 font-semibold opacity-60">({tenant.code})</span>
-                </button>
-              );
-            })}
-            <p className="flex items-center text-[10px] font-semibold uppercase tracking-wide text-amber-500">
-              Each tenant sees only its own data via X-Mandant-ID header
-            </p>
-          </div>
-        )}
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-[10px] font-black uppercase tracking-widest hover:bg-amber-100"
+        >
+          {isCollapsed ? (
+            <>
+              Expand <ChevronDownIcon className="h-3 w-3" />
+            </>
+          ) : (
+            <>
+              Collapse <ChevronUpIcon className="h-3 w-3" />
+            </>
+          )}
+        </button>
       </div>
+
+      {!isCollapsed && (
+        <div className="mx-auto mt-3 flex max-w-7xl flex-wrap gap-2 animate-in fade-in slide-in-from-top-2 duration-500">
+          {tenants.map((tenant) => (
+            <button
+              key={tenant.id}
+              onClick={() => onSelectMunicipality(tenant)}
+              className={`rounded-xl px-3 py-1.5 text-xs font-black transition-all ${
+                activeMunicipalityId === tenant.id
+                  ? "bg-amber-600 text-white shadow-lg shadow-amber-200 ring-2 ring-amber-600 ring-offset-1"
+                  : "bg-white text-amber-900 border border-amber-200 hover:border-amber-400 hover:bg-amber-100/50"
+              }`}
+            >
+              {tenant.name}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

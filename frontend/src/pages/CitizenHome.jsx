@@ -260,6 +260,11 @@ function TransferRequestCard({ transfer, onViewFull }) {
             <span className="text-sm font-black text-slate-950">Antrag #{transfer.id}</span>
             <GroupPill status={transfer.status} />
             {isTerminal && <StatusBadge value={transfer.status} />}
+            {transfer.payment_required && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-black uppercase text-amber-700 ring-1 ring-amber-200">
+                💰 Zahlung erforderlich
+              </span>
+            )}
           </div>
           <p className="mt-1 text-sm font-semibold text-slate-600">
             {dogName} · {from} → {to}
@@ -314,6 +319,7 @@ export default function CitizenHome({
   currentCitizen,
   health,
   selectedMunicipalityId,
+  selectedTenant,
   setActivePage,
   setSelectedTransferRegistrationId,
   tenants = [],
@@ -337,8 +343,8 @@ export default function CitizenHome({
     setError("");
     try {
       const [citizenData, transferData] = await Promise.all([
-        apiGet("/citizen/me", null, citizenContext),
-        apiGet("/transfer-requests", null, citizenContext),
+        apiGet("/citizen/me", selectedTenant, citizenContext),
+        apiGet("/transfer-requests", selectedTenant, citizenContext),
       ]);
       setCitizen(citizenData);
       setTransfers(transferData || []);
@@ -351,7 +357,7 @@ export default function CitizenHome({
 
   async function fetchNotice(registrationId) {
     try {
-      const data = await apiGet(`/registrations/${registrationId}/notice`, null, citizenContext);
+      const data = await apiGet(`/registrations/${registrationId}/notice`, selectedTenant, citizenContext);
       setNotice(data.notice);
     } catch (err) {
       setError(err.message);

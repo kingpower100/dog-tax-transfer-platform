@@ -54,6 +54,7 @@ function ReadonlyField({ label, value }) {
 export default function TransferDogForm({
   currentUserId,
   selectedMunicipalityId,
+  selectedTenant,
   selectedTransferRegistrationId,
   tenants = [],
 }) {
@@ -95,7 +96,7 @@ export default function TransferDogForm({
     if (!sourceMunicipalityId || !registrationId) return;
     try {
       setError("");
-      const data = await apiGet(`/registrations/${registrationId}/transfer-form-data`, null, citizenContext);
+      const data = await apiGet(`/registrations/${registrationId}/transfer-form-data`, selectedTenant, citizenContext);
       setFormData(data);
       const targets = (data.target_municipalities || []).filter((t) => t.id !== data.source_municipality?.id);
       const preferred = targets.find((t) => t.code === TARGET_MUNICIPALITY_CODE);
@@ -128,24 +129,32 @@ export default function TransferDogForm({
     }
     setSubmitting(true);
     try {
-      const created = await apiPost("/transfers", {
-        ...citizenContext,
-        registration_id: registrationId,
-        target_municipality_id: Number(form.target_municipality_id),
-        insurance_number: form.insuranceNumber.trim(),
-        target_street: form.target_street,
-        target_house_number: form.target_house_number,
-        target_postal_code: form.target_postal_code,
-        target_city: form.target_city,
-        move_date: form.move_date,
-        deregistration_date: form.deregistration_date,
-        deregistration_reason: "moved_to_other_municipality",
-      });
-      await apiPost(`/transfers/${created.id}/consent`, {
-        ...citizenContext,
-        consent_accepted: true,
-        consent_text: CONSENT_TEXT,
-      });
+      const created = await apiPost(
+        "/transfers",
+        {
+          ...citizenContext,
+          registration_id: registrationId,
+          target_municipality_id: Number(form.target_municipality_id),
+          insurance_number: form.insuranceNumber.trim(),
+          target_street: form.target_street,
+          target_house_number: form.target_house_number,
+          target_postal_code: form.target_postal_code,
+          target_city: form.target_city,
+          move_date: form.move_date,
+          deregistration_date: form.deregistration_date,
+          deregistration_reason: "moved_to_other_municipality",
+        },
+        selectedTenant,
+      );
+      await apiPost(
+        `/transfers/${created.id}/consent`,
+        {
+          ...citizenContext,
+          consent_accepted: true,
+          consent_text: CONSENT_TEXT,
+        },
+        selectedTenant,
+      );
       setMessage("Ummeldungsantrag erfolgreich eingereicht. Die Quellgemeinde prüft den Antrag und erstellt das Abmeldedokument.");
     } catch (err) {
       setError(err.message);

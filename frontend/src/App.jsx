@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
-import { apiGet } from "./api/client.js";
+import { apiGet, demoContext } from "./api/client.js";
 import { clearAccessContext, loadAccessContext, saveAccessContext } from "./api/accessContext.js";
 import AppHeader from "./components/AppHeader.jsx";
 import AlertBox from "./components/AlertBox.jsx";
 import DemoSwitcherBar from "./components/DemoSwitcherBar.jsx";
+import CitizenSwitcherBar from "./components/CitizenSwitcherBar.jsx";
 import CitizenLoginPage from "./pages/CitizenLoginPage.jsx";
-import IncomingTransfers from "./pages/IncomingTransfers.jsx";
+import AuthoritySelectionPage from "./pages/AuthoritySelectionPage.jsx";
+
 import OutgoingTransfers from "./pages/OutgoingTransfers.jsx";
 import TransferDogForm from "./pages/TransferDogForm.jsx";
 import RegisterDog from "./pages/RegisterDog.jsx";

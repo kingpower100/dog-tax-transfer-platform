@@ -238,6 +238,17 @@ export default function App() {
     saveAccessContext(context);
   }
 
+  // Called from CitizenSwitcherBar to switch user
+  async function switchCitizen(citizen) {
+    setCurrentUserId(citizen.id);
+    try {
+      const data = await apiGet("/citizen/me", "BERLIN", demoContext({ role: "citizen", userId: citizen.id }));
+      setCurrentCitizen({ ...citizen, ...data });
+    } catch (err) {
+      setCurrentCitizen(citizen);
+    }
+  }
+
   function switchAccess() {
     clearAccessContext();
     setCurrentUserId(null);
@@ -269,6 +280,14 @@ export default function App() {
           tenants={tenants}
           activeMunicipalityId={selectedMunicipalityId}
           onSelectMunicipality={switchMunicipality}
+        />
+      ) : null}
+
+      {/* Citizen switcher bar — for demo purposes */}
+      {selectedRole === "CITIZEN" ? (
+        <CitizenSwitcherBar
+          currentCitizen={currentCitizen}
+          onSwitchCitizen={switchCitizen}
         />
       ) : null}
 

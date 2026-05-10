@@ -32,7 +32,13 @@ const transferSteps = [
   { label: "Tax recalculated & transfer complete", color: "bg-green-100 text-green-800 border-green-200" },
 ];
 
-export default function LandingPage({ onOpenRole }) {
+export default function LandingPage({ onOpenRole, municipalities = [] }) {
+  const berlinTenant = municipalities.find((t) => t.code === "BERLIN") || {
+    id: 2,
+    code: "BERLIN",
+    name: "Berlin",
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       {/* Sticky top nav */}
@@ -132,7 +138,7 @@ export default function LandingPage({ onOpenRole }) {
               {/* Authority Portal */}
               <button
                 type="button"
-                onClick={() => onOpenRole("AUTHORITY_SELECT")}
+                onClick={() => onOpenRole("MUNICIPALITY", berlinTenant)}
                 className="group rounded-2xl border border-white/20 bg-white/10 p-5 text-left shadow-lg backdrop-blur-sm transition hover:border-purple-300/60 hover:bg-white/15"
               >
                 <div className="flex items-center gap-3">

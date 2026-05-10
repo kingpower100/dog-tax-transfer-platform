@@ -5,13 +5,6 @@ export default function CitizenLoginPage({ onSelectCitizen, onBack }) {
   const [loading, setLoading] = useState(false);
   const [method, setMethod] = useState(null);
 
-  const citizens = [
-    { id: 1001, name: "Anna Müller" },
-    { id: 1002, name: "Lukas Schneider" },
-    { id: 1005, name: "Julia Wagner" },
-    { id: 1015, name: "Martina Koch" },
-  ];
-
   const handleLogin = (citizen) => {
     setLoading(true);
     setTimeout(() => {
@@ -49,21 +42,13 @@ export default function CitizenLoginPage({ onSelectCitizen, onBack }) {
 
       {method && (
         <div className="mt-10 border-t border-slate-200 pt-8">
-          <h3 className="mb-4 font-black text-slate-700">Wählen Sie einen Test-Bürger:</h3>
-          <div className="grid grid-cols-2 gap-3">
-            {citizens.map(c => (
-              <button 
-                key={c.id} 
-                onClick={() => handleLogin(c)}
-                className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 hover:border-blue-400"
-              >
-                <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center font-black text-slate-600">
-                  {c.name.split(' ').map(n => n[0]).join('')}
-                </div>
-                <span className="text-sm font-bold text-slate-900">{c.name}</span>
-              </button>
-            ))}
-          </div>
+          <button 
+            onClick={() => handleLogin({ id: 1001, name: "Julia Wagner" })}
+            className="w-full flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4 hover:border-blue-500 transition"
+          >
+            <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center font-black text-white">JW</div>
+            <span className="text-sm font-bold text-slate-900">Login as Julia Wagner</span>
+          </button>
         </div>
       )}
     </div>

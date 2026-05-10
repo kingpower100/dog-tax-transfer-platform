@@ -1,3 +1,4 @@
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { apiGet, demoContext } from "./api/client.js";
 import { clearAccessContext, loadAccessContext, saveAccessContext } from "./api/accessContext.js";
@@ -45,6 +46,15 @@ const rolePages = {
 };
 
 export default function App() {
+  return (
+    <BrowserRouter>
+      <AppRoutes />
+    </BrowserRouter>
+  );
+}
+
+function AppRoutes() {
+  const navigate = useNavigate();
   const storedContext = loadAccessContext();
 
   const [selectedTenant, setSelectedTenant] = useState(storedContext?.selectedMunicipalityCode || "BERLIN");
@@ -178,7 +188,7 @@ export default function App() {
     if (role === "CITIZEN") {
       setSelectedRole("CITIZEN");
       setShowLanding(false);
-      setShowCitizenLogin(true); // <— show citizen login instead of portal directly
+      navigate("/login");
       return;
     }
 
@@ -195,6 +205,7 @@ export default function App() {
       setSelectedMunicipalityId(municipality.id);
       setActivePage("outgoing-transfers");
       saveAccessContext(context);
+      navigate("/portal");
     }
 
     if (role === "PLATFORM_ADMIN") {
@@ -204,6 +215,7 @@ export default function App() {
       setSelectedMunicipalityName("All Municipalities");
       setActivePage("platform-overview");
       saveAccessContext(context);
+      navigate("/portal");
     }
 
     setShowLanding(false);
@@ -213,7 +225,7 @@ export default function App() {
   async function selectCitizen(citizen) {
     setCurrentUserId(citizen.id);
     setActivePage("citizen-home");
-    setShowCitizenLogin(false);
+    navigate("/portal");
     
     // Fetch detailed profile from backend to get correct municipality
     try {
@@ -268,63 +280,63 @@ export default function App() {
     clearAccessContext();
     setCurrentUserId(null);
     setCurrentCitizen(null);
-    setShowCitizenLogin(false);
     setShowLanding(true);
+    navigate("/");
   }
 
   // --- Render routing ---
 
-  if (showLanding) {
-    return <LandingPage onOpenRole={openRole} municipalities={tenants} />;
-  }
-
-  if (showCitizenLogin) {
-    return (
-      <CitizenLoginPage
-        onSelectCitizen={selectCitizen}
-        onBack={switchAccess}
-      />
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      {/* Municipality isolation debug bar — only for MUNICIPALITY role */}
-      {selectedRole === "MUNICIPALITY" ? (
-        <DemoSwitcherBar
-          tenants={tenants}
-          activeMunicipalityId={selectedMunicipalityId}
-          onSelectMunicipality={switchMunicipality}
+    <Routes>
+      <Route path="/" element={
+        showLanding ? <LandingPage onOpenRole={openRole} municipalities={tenants} /> : <Navigate to="/portal" />
+      } />
+      <Route path="/login" element={
+        <CitizenLoginPage
+          onSelectCitizen={selectCitizen}
+          onBack={switchAccess}
         />
-      ) : null}
+      } />
+      <Route path="/portal" element={
+        <div className="min-h-screen bg-slate-50 text-slate-900">
+          {/* Municipality isolation debug bar — only for MUNICIPALITY role */}
+          {selectedRole === "MUNICIPALITY" ? (
+            <DemoSwitcherBar
+              tenants={tenants}
+              activeMunicipalityId={selectedMunicipalityId}
+              onSelectMunicipality={switchMunicipality}
+            />
+          ) : null}
 
-      {/* Citizen switcher bar — for demo purposes */}
-      {selectedRole === "CITIZEN" ? (
-        <CitizenSwitcherBar
-          currentCitizen={currentCitizen}
-          onSwitchCitizen={switchCitizen}
-        />
-      ) : null}
+          {/* Citizen switcher bar — for demo purposes */}
+          {selectedRole === "CITIZEN" ? (
+            <CitizenSwitcherBar
+              currentCitizen={currentCitizen}
+              onSwitchCitizen={switchCitizen}
+            />
+          ) : null}
 
-      <AppHeader
-        activePage={activePage}
-        health={health}
-        pages={pages}
-        selectedRole={selectedRole}
-        selectedTenant={selectedMunicipalityName}
-        setActivePage={setActivePage}
-        setShowLanding={switchAccess}
-        currentCitizen={currentCitizen}
-      />
+          <AppHeader
+            activePage={activePage}
+            health={health}
+            pages={pages}
+            selectedRole={selectedRole}
+            selectedTenant={selectedMunicipalityName}
+            setActivePage={setActivePage}
+            setShowLanding={switchAccess}
+            currentCitizen={currentCitizen}
+          />
 
-      <main className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
-        {shellError ? (
-          <AlertBox type="warning" title="Backend nicht erreichbar / Backend unavailable">
-            {shellError}
-          </AlertBox>
-        ) : null}
-        {renderPage()}
-      </main>
-    </div>
+          <main className="mx-auto max-w-7xl px-4 py-8 lg:px-6">
+            {shellError ? (
+              <AlertBox type="warning" title="Backend nicht erreichbar / Backend unavailable">
+                {shellError}
+              </AlertBox>
+            ) : null}
+            {renderPage()}
+          </main>
+        </div>
+      } />
+    </Routes>
   );
 }

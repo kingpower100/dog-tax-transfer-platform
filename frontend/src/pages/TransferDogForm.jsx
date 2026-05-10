@@ -60,7 +60,9 @@ export default function TransferDogForm({
 }) {
   const userId = currentUserId || 1001;
   const sourceMunicipalityId = selectedMunicipalityId || tenantId(tenants, "BERLIN");
-  const registrationId = selectedTransferRegistrationId || 3;
+
+  const [availableRegistrations, setAvailableRegistrations] = useState([]);
+  const [selectedRegistrationId, setSelectedRegistrationId] = useState(selectedTransferRegistrationId || null);
 
   const [formData, setFormData] = useState(null);
   const [form, setForm] = useState({
@@ -83,20 +85,35 @@ export default function TransferDogForm({
     [userId, sourceMunicipalityId],
   );
 
+  async function loadAvailableRegistrations() {
+    try {
+      const data = await apiGet("/citizen/me/dogs", selectedTenant, citizenContext);
+      setAvailableRegistrations(data || []);
+      if (data?.length === 1) {
+        setSelectedRegistrationId(data[0].registration_id);
+      }
+    } catch (err) {
+      setError("Fehler beim Laden Ihrer Hunde.");
+    }
+  }
+
+  useEffect(() => { loadAvailableRegistrations(); }, [sourceMunicipalityId, userId]);
+
   const currentStep = useMemo(() => {
     if (message) return 3;
     if (form.consent) return 3;
     const addressFilled = form.target_street.trim() && form.target_postal_code.trim() && form.target_municipality_id;
     if (addressFilled) return 2;
     if (formData) return 1;
+    if (selectedRegistrationId) return 1;
     return 0;
-  }, [formData, form, message]);
+  }, [formData, form, message, selectedRegistrationId]);
 
   async function loadFormData() {
-    if (!sourceMunicipalityId || !registrationId) return;
+    if (!sourceMunicipalityId || !selectedRegistrationId) return;
     try {
       setError("");
-      const data = await apiGet(`/registrations/${registrationId}/transfer-form-data`, selectedTenant, citizenContext);
+      const data = await apiGet(`/registrations/${selectedRegistrationId}/transfer-form-data`, selectedTenant, citizenContext);
       setFormData(data);
       const targets = (data.target_municipalities || []).filter((t) => t.id !== data.source_municipality?.id);
       const preferred = targets.find((t) => t.code === TARGET_MUNICIPALITY_CODE);
@@ -109,7 +126,7 @@ export default function TransferDogForm({
     }
   }
 
-  useEffect(() => { loadFormData(); }, [sourceMunicipalityId, registrationId]);
+  useEffect(() => { loadFormData(); }, [selectedRegistrationId]);
 
   function setField(key, value) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -133,7 +150,7 @@ export default function TransferDogForm({
         "/transfers",
         {
           ...citizenContext,
-          registration_id: registrationId,
+          registration_id: selectedRegistrationId,
           target_municipality_id: Number(form.target_municipality_id),
           insurance_number: form.insuranceNumber.trim(),
           target_street: form.target_street,
@@ -187,7 +204,7 @@ export default function TransferDogForm({
           <button
             className="primary mt-4"
             type="button"
-            onClick={() => { setMessage(""); setForm({ ...form, consent: false }); }}
+            onClick={() => { setMessage(""); setForm({ ...form, consent: false }); setSelectedRegistrationId(null); setFormData(null); }}
           >
             Weiteren Antrag stellen
           </button>
@@ -214,16 +231,28 @@ export default function TransferDogForm({
         <div className="px-6 py-4">
           <Stepper steps={TRANSFER_STEPS} currentStep={currentStep} />
         </div>
-
-        {/* Once-Only info notice */}
-        <div className="mx-6 mb-4 flex items-start gap-3 rounded-lg border border-blue-100 bg-blue-50 p-3">
-          <ShieldIcon className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" />
-          <p className="text-xs leading-5 text-blue-800">
-            <strong className="font-black">EU Once-Only Prinzip (seit 2023):</strong> Ihre bei der Quellgemeinde gespeicherten
-            Daten werden direkt an die Zielgemeinde übermittelt — Sie müssen keine Informationen erneut einreichen.
-            Nur die neue Adresse wird benötigt.
-          </p>
-        </div>
+        
+        {/* Registration Selection */}
+        {availableRegistrations.length > 1 && !selectedRegistrationId ? (
+          <div className="px-6 py-4 border-t border-slate-100">
+            <h3 className="text-sm font-black text-slate-950 mb-3">Bitte Hund für Ummeldung wählen:</h3>
+            <div className="grid gap-3">
+              {availableRegistrations.map(reg => (
+                <button
+                  key={reg.registration_id}
+                  className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:border-[#0f2e55] hover:bg-slate-50 text-left"
+                  onClick={() => setSelectedRegistrationId(reg.registration_id)}
+                >
+                  <div>
+                    <p className="text-sm font-black">{reg.dog_name}</p>
+                    <p className="text-xs text-slate-500">{reg.breed}</p>
+                  </div>
+                  <span className="text-xs font-semibold px-2 py-1 bg-slate-100 rounded">Reg #{reg.registration_id}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
       </div>
 
       {error ? <AlertBox type="error">{error}</AlertBox> : null}

@@ -10,7 +10,6 @@ export default defineConfig({
         main: resolve(__dirname, "index.html"),
         anmeldung: resolve(__dirname, "anmeldung.html"),
         ummeldung: resolve(__dirname, "ummeldung.html"),
-        dashboard: resolve(__dirname, "dashboard.html"),
       },
     },
   },

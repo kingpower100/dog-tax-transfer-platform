@@ -1,9 +1,6 @@
 export default function CitizenSwitcherBar({ currentCitizen, onSwitchCitizen }) {
   const citizens = [
-    { id: 1001, name: "Anna Müller" },
-    { id: 1002, name: "Lukas Schneider" },
-    { id: 1005, name: "Julia Wagner" },
-    { id: 1015, name: "Martina Koch" },
+    { id: 1001, name: "Julia Wagner" },
   ];
 
   return (

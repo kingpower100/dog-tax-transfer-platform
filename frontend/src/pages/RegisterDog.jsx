@@ -11,17 +11,17 @@ const REGISTER_STEPS = [
 ];
 
 const initialForm = {
-  insuranceNumber: "",
+  insuranceNumber: "VERS-2026-9988",
   owner: {
-    first_name: "",
-    last_name: "",
-    date_of_birth: "",
-    street: "",
-    house_number: "",
-    postal_code: "",
-    city: "",
-    email: "",
-    phone: "",
+    first_name: "Max",
+    last_name: "Mustermann",
+    date_of_birth: "1985-05-15",
+    street: "Hauptstraße",
+    house_number: "10",
+    postal_code: "10115",
+    city: "Berlin",
+    email: "max.mustermann@example.de",
+    phone: "0170 1234567",
   },
   dog: {
     name: "",
@@ -55,6 +55,17 @@ const dogFields = [
 const inputCls = "h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-900 placeholder:text-slate-400 shadow-sm focus:border-[#0f2e55] focus:outline-none focus:ring-2 focus:ring-blue-100";
 const selectCls = `${inputCls} cursor-pointer`;
 
+const readonlyCls = "h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-600 shadow-sm cursor-not-allowed";
+
+function ReadonlyField({ label, value }) {
+  return (
+    <div className="space-y-1.5">
+      <span className="block text-xs font-black uppercase tracking-wide text-slate-500">{label}</span>
+      <input className={readonlyCls} readOnly value={value || "—"} />
+    </div>
+  );
+}
+
 function FormSection({ number, title, subtitle, children }) {
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
@@ -87,6 +98,7 @@ export default function RegisterDog({ selectedTenant, tenants = [], currentUserI
   const [form, setForm] = useState(initialForm);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
+  const [currentStep, setCurrentStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -231,18 +243,15 @@ export default function RegisterDog({ selectedTenant, tenants = [], currentUserI
         {/* Step 1 — Owner */}
         <FormSection number="1" title="Angaben zum Steuerpflichtigen (Halter)" subtitle="Personenbezogene Daten des Hundehalters">
           <div className="grid gap-4 sm:grid-cols-2">
-            {ownerFields.map(({ key, label, type }) => (
-              <label key={key} className="space-y-1.5">
-                <span className="block text-xs font-black uppercase tracking-wide text-slate-600">{label}</span>
-                <input
-                  className={inputCls}
-                  type={type}
-                  value={form.owner[key]}
-                  onChange={(e) => updateOwner(key, e.target.value)}
-                  placeholder={label.replace(" *", "")}
-                />
-              </label>
-            ))}
+            <ReadonlyField label="Vorname" value={form.owner.first_name} />
+            <ReadonlyField label="Nachname" value={form.owner.last_name} />
+            <ReadonlyField label="Geburtsdatum" value={form.owner.date_of_birth} />
+            <ReadonlyField label="E-Mail-Adresse" value={form.owner.email} />
+            <ReadonlyField label="Straße" value={form.owner.street} />
+            <ReadonlyField label="Hausnummer" value={form.owner.house_number} />
+            <ReadonlyField label="Postleitzahl" value={form.owner.postal_code} />
+            <ReadonlyField label="Ort / Stadt" value={form.owner.city} />
+            <ReadonlyField label="Telefon" value={form.owner.phone} />
           </div>
         </FormSection>
 

@@ -190,6 +190,16 @@ def serialize_transfer(transfer: TransferRequest, include_payload: bool = False,
             tax_preview = calculate_dog_tax(db, transfer.to_municipality_id, 0, source_dog.dog_type)
         except HTTPException:
             tax_preview = None
+
+    # Determine if payment is required (after target municipality approval)
+    annual_tax_amount = target_registration.annual_tax_amount if target_registration else None
+    payment_required = (
+        transfer.status in ("target_finance_approved", "completed", "released_by_source")
+        and annual_tax_amount is not None
+        and annual_tax_amount > 0
+    )
+    tax_due_eur = annual_tax_amount if payment_required else None
+
     return {
         "id": transfer.id,
         "citizen_user_id": transfer.citizen_user_id,
@@ -246,6 +256,8 @@ def serialize_transfer(transfer: TransferRequest, include_payload: bool = False,
         if tax_assessment is not None
         else None,
         "tax_preview": tax_preview,
+        "payment_required": payment_required,
+        "tax_due_eur": tax_due_eur,
     }
 
 
@@ -819,7 +831,7 @@ def create_workflow_transfer_request(db: Session, payload: TransferCreateRequest
     )
     db.add(transfer)
     db.flush()
-    _audit(db, "TRANSFER_SUBMITTED", transfer, context, {"registration_id": registration.id})
+    _audit(db, "TRANSFER_REQUEST_CREATED", transfer, context, {"registration_id": registration.id})
     db.commit()
     db.refresh(transfer)
     return serialize_transfer(transfer, include_payload=True, db=db)
@@ -848,7 +860,7 @@ def submit_transfer_form(db: Session, transfer_id: int, payload: TransferCreateR
     if not transfer.insurance_number:
         raise HTTPException(status_code=400, detail="Insurance number is required.")
     transfer.status = "citizen_submitted"
-    _audit(db, "TRANSFER_SUBMITTED", transfer, current_user)
+    _audit(db, "TRANSFER_REQUEST_CREATED", transfer, current_user)
     db.commit()
     db.refresh(transfer)
     return serialize_transfer(transfer, include_payload=True, db=db)
@@ -1257,8 +1269,8 @@ def complete_transfer(db: Session, transfer_id: int, current_user: DemoContext) 
     for action, details in [
         ("TARGET_REGISTRATION_CREATED", {"target_registration_id": target_registration.id}),
         ("SOURCE_REGISTRATION_CLOSED", {"source_registration_id": source_registration.id if source_registration else None}),
-        ("TAX_CALCULATED", {"amount_eur": tax["amount_eur"], "tax_rule_id": tax["tax_rule_id"]}),
-        ("TRANSFER_COMPLETED", {"transfer_request_id": transfer.id}),
+        ("TAX_ASSESSED", {"amount_eur": tax["amount_eur"], "tax_rule_id": tax["tax_rule_id"]}),
+        ("TARGET_ACCEPTED_COMPLETED", {"transfer_request_id": transfer.id}),
     ]:
         _audit(db, action, transfer, current_user, details)
     db.commit()
@@ -1313,6 +1325,8 @@ def create_anmeldung(db: Session, tenant: Municipality, request: AnmeldungReques
         active_before,
         request.hund.typ,
         assistance_dog=bool(request.assistance_dog),
+        shelter_adoption=bool(request.shelter_adoption),
+        social_benefit=bool(request.social_benefit),
     )
     dog_position = tax["dog_position"]
 
@@ -1385,6 +1399,8 @@ def create_anmeldung(db: Session, tenant: Municipality, request: AnmeldungReques
         "registrierungId": registration.id,
         "steuerbetrag": tax["amount_eur"],
         "assistance_dog": bool(request.assistance_dog),
+        "shelter_adoption": bool(request.shelter_adoption),
+        "social_benefit": bool(request.social_benefit),
         "tax_reduced": bool(request.tax_reduced or tax.get("tax_reduced")),
         "reduction_reason": tax.get("reduction_reason") or request.reduction_reason,
         "liability_insurance_available": bool(request.liability_insurance_available),
@@ -1514,6 +1530,8 @@ def create_ummeldung(
         active_before,
         "LISTENHUND" if source_dog.is_dangerous else "NORMAL",
         assistance_dog=bool(getattr(request, "assistance_dog", False) or source_assistance_dog),
+        shelter_adoption=bool(getattr(request, "shelter_adoption", False)),
+        social_benefit=bool(getattr(request, "social_benefit", False)),
     )
     dog_position = tax["dog_position"]
 
@@ -1575,15 +1593,12 @@ def create_ummeldung(
         source_case_details["source_registration_id"] = source_registration.id
 
     for action, details in [
-        ("UMMELDUNG_STARTED", audit_base),
+        ("TRANSFER_REQUEST_CREATED", audit_base),
         ("SOURCE_CASE_DEREGISTERED", source_case_details),
         ("TRANSFER_PAYLOAD_CREATED", {**audit_base, "transfer_payload_id": transfer_payload.id}),
         ("TARGET_CASE_CREATED", {**audit_base, "target_registration_id": target_registration.id}),
-        (
-            "TARGET_TAX_ASSESSED",
-            {**audit_base, "amount_eur": tax["amount_eur"], "tax_rule_id": tax["tax_rule_id"]},
-        ),
-        ("UMMELDUNG_COMPLETED", audit_base),
+        ("TAX_ASSESSED", {**audit_base, "amount_eur": tax["amount_eur"], "tax_rule_id": tax["tax_rule_id"]}),
+        ("TARGET_ACCEPTED_COMPLETED", audit_base),
     ]:
         create_audit_log(
             db,
@@ -1609,6 +1624,8 @@ def create_ummeldung(
         "registrierungId": target_registration.id,
         "neuer_steuerbetrag": tax["amount_eur"],
         "assistance_dog": bool(getattr(request, "assistance_dog", False) or source_assistance_dog),
+        "shelter_adoption": bool(getattr(request, "shelter_adoption", False)),
+        "social_benefit": bool(getattr(request, "social_benefit", False)),
         "tax_reduced": bool(getattr(request, "tax_reduced", False) or source_tax_reduced or tax.get("tax_reduced")),
         "reduction_reason": tax.get("reduction_reason") or getattr(request, "reduction_reason", None) or source_reduction_reason,
         "liability_insurance_available": bool(

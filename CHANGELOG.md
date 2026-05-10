@@ -2,6 +2,24 @@
 
 All notable changes to the Once-Only Dog Tax Transfer Platform will be documented in this file.
 
+## [1.2.0] - 2026-05-10
+
+### Added
+- **Data-driven tax rule engine**: Fully scalable architecture where adding a new municipality or exemption type requires only database rows, not code changes. Rules now use `condition` (DEFAULT, LISTENHUND, ASSISTANCE_DOG, SHELTER_ADOPTION, SOCIAL_BENEFIT) and `priority` (0–100) to determine evaluation order.
+- **Support for shelter adoption and social benefit flags**: New request parameters `shelter_adoption` and `social_benefit` in Anmeldung and Ummeldung endpoints, wired through to tax calculation.
+- **Position-independent matching**: The rule evaluator correctly handles 4+ dogs by matching the highest-numbered position ≤ actual position (e.g., Berlin's position 3 rule applies to dogs 3, 4, 5+).
+
+### Changed
+- **DogTaxRule model refactored**: Replaced `rule_type` (hardcoded enum) with `condition` (flexible text) + `priority` (integer). Added `max_months` for time-limited reductions.
+- **tax_service.py fully rewritten**: Generic rule evaluator replaces hardcoded if/elif waterfall. Evaluates conditions in priority order, matches positional tiers, and falls back gracefully.
+- **Schemas updated**: AnmeldungRequest, AnmeldungResponse, UmmeldungRequest, UmmeldungResponse now include `shelter_adoption` and `social_benefit` fields.
+- **transfer_service.py updated**: create_anmeldung() and create_ummeldung() now pass new flags through to calculate_dog_tax().
+- **Seed data migrated**: All BASIC → DEFAULT, DANGEROUS → LISTENHUND, EXEMPTION → ASSISTANCE_DOG, SHELTER_REDUCTION → SHELTER_ADOPTION, with appropriate priorities assigned.
+- **docs/TAX_LOGIC.md completely rewritten**: Explains the data-driven architecture, priority-based matching, position matching algorithm, and multi-dog handling with examples.
+
+### Fixed
+- **Schema migration**: Removed hardcoded `rule_type` CheckConstraint; new system is extensible without migrations.
+
 ## [1.1.0] - 2026-05-10
 
 ### Added
@@ -41,7 +59,7 @@ All notable changes to the Once-Only Dog Tax Transfer Platform will be documente
 
 ### Changed
 - **Refined Tax Logic**: Updated `seed.py` and `tax_service.py` to strictly adhere to real-world municipal statutes for Hannover (tiered rates + dangerous breed premium) and Berlin.
-- **Audit Log Transparency**: Enhanced the transfer status page to show a detailed timeline of events with unique cryptographic hashes for every state transition.
+- **Audit Log Transparency**: Enhanced the transfer status page to show a detailed timeline of events with unique cryptographic hashes for every state transition. Standardized all audit event names (e.g., `TAX_ASSESSED`, `TARGET_ACCEPTED_COMPLETED`) to strictly follow the requirements in `AUDIT_LOG.md`.
 - **Repository Cleanup**: Added a comprehensive `.gitignore` and cleared the git cache to ensure only source files (and not `node_modules`, `venv`, or local `.db` files) are tracked.
 
 ### Fixed

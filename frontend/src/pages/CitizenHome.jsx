@@ -91,10 +91,14 @@ function ProfileCard({ citizen }) {
   const name = citizen.user?.name || "Bürger";
   const email = citizen.user?.email || "—";
   const owner = citizen.owner;
+  
+  // Show "Bürger" as a fallback name if owner record is missing or incomplete
+  const displayName = owner ? `${owner.first_name} ${owner.last_name}` : name;
   const address = owner
-    ? `${owner.street} ${owner.house_number}, ${owner.postal_code} ${owner.city}`
-    : "—";
-  const initials = name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+    ? `${owner.street} ${owner.house_number || ""}, ${owner.postal_code || ""} ${owner.city || ""}`
+    : "Kein Profil hinterlegt";
+
+  const initials = displayName.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
 
   return (
     <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:flex-row lg:items-start">
@@ -107,7 +111,7 @@ function ProfileCard({ citizen }) {
       <div className="flex-1 space-y-3">
         <div>
           <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Bürger · Hundesteuer</p>
-          <h2 className="mt-0.5 text-2xl font-black text-slate-950">{name}</h2>
+          <h2 className="mt-0.5 text-2xl font-black text-slate-950">{displayName}</h2>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-3 text-sm">
@@ -128,9 +132,9 @@ function ProfileCard({ citizen }) {
       <div className="shrink-0 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-center text-xs">
         <div className="font-black uppercase tracking-wide text-slate-400">Steuerpflichtiger</div>
         <div className="mt-1 font-black text-slate-700">
-          OWN-{owner?.id || "—"}
+          {owner ? `OWN-${owner.id}` : "Nicht registriert"}
         </div>
-        <StatusBadge value="active" />
+        <StatusBadge value={owner ? "active" : "incomplete"} />
       </div>
     </div>
   );

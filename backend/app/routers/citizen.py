@@ -107,10 +107,8 @@ def get_current_citizen_dashboard(
     )
     registrations = db.scalars(query).all()
 
-    primary_owner = registrations[0].owner if registrations else db.scalar(
-        select(Owner)
-        .where(_owner_identity_filter(user))
-        .order_by(Owner.updated_at.desc(), Owner.id.desc())
+    primary_owner = db.scalar(
+        select(Owner).where(Owner.user_id == user.id).order_by(Owner.updated_at.desc(), Owner.id.desc())
     )
 
     dogs = []

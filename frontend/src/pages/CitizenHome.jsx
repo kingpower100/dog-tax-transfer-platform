@@ -20,12 +20,15 @@ export default function CitizenHome({
   selectedMunicipalityId,
   setActivePage,
   setSelectedTransferRegistrationId,
+  tenants = [],
 }) {
   const [citizen, setCitizen] = useState(null);
   const [receipt, setReceipt] = useState(null);
+  const [notice, setNotice] = useState(null);
   const [loading, setLoading] = useState(false);
   const [generatingReceipt, setGeneratingReceipt] = useState(false);
   const [error, setError] = useState("");
+  const [taxComparison, setTaxComparison] = useState([]);
 
   const citizenContext = useMemo(
     () => demoContext({ role: "citizen", municipalityId: selectedMunicipalityId, userId: currentUserId }),
@@ -60,6 +63,19 @@ export default function CitizenHome({
     }
   }
 
+  async function fetchNotice(registrationId) {
+    setLoading(true);
+    setError("");
+    try {
+      const data = await apiGet(`/registrations/${registrationId}/notice`, null, citizenContext);
+      setNotice(data.notice);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   function startMove(registrationId) {
     setSelectedTransferRegistrationId(registrationId);
     setActivePage("request-transfer");
@@ -69,8 +85,48 @@ export default function CitizenHome({
     fetchCurrentCitizenDogs();
   }, [currentUserId, selectedMunicipalityId]);
 
+  useEffect(() => {
+    if (!tenants.length) return;
+    Promise.all(
+      tenants.map((t) =>
+        apiGet("/tax-rules", t.code).then((rules) => ({ municipality: t.name, code: t.code, rules })).catch(() => null)
+      )
+    ).then((results) => {
+      const rows = results.filter(Boolean).map(({ municipality, code, rules }) => {
+        const basic1 = rules.find((r) => r.rule_type === "BASIC" && r.dog_position === 1)?.amount_eur;
+        const basic2 = rules.find((r) => r.rule_type === "BASIC" && r.dog_position === 2)?.amount_eur;
+        const dangerous = rules.find((r) => r.rule_type === "DANGEROUS")?.amount_eur;
+        return { municipality, code, basic1, basic2, dangerous };
+      });
+      setTaxComparison(rows);
+    });
+  }, [tenants]);
+
   return (
     <section className="space-y-4">
+      {notice && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="flex items-center justify-between border-b pb-4">
+              <h2 className="text-xl font-black text-slate-950">Registration Notice (Bescheid)</h2>
+              <button
+                className="rounded-lg p-2 hover:bg-slate-100"
+                onClick={() => setNotice(null)}
+              >
+                ✕
+              </button>
+            </div>
+            <pre className="mt-4 max-h-[60vh] overflow-y-auto whitespace-pre-wrap rounded-xl bg-slate-50 p-4 font-mono text-sm text-slate-800">
+              {notice}
+            </pre>
+            <div className="mt-6 flex justify-end">
+              <button className="primary" onClick={() => setNotice(null)}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <PageHeader
         eyebrow="Citizen self-service"
         title="Citizen Dashboard"
@@ -185,6 +241,13 @@ export default function CitizenHome({
                     View Registration
                   </button>
                   <button
+                    className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-black text-slate-900 hover:bg-slate-50"
+                    type="button"
+                    onClick={() => fetchNotice(dog.registration_id)}
+                  >
+                    View Notice
+                  </button>
+                  <button
                     className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-black text-slate-900 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
                     type="button"
                     onClick={generateReceiptPreview}
@@ -259,6 +322,37 @@ export default function CitizenHome({
           )}
         </SectionCard>
       </div>
+
+      {taxComparison.length > 0 && (
+        <SectionCard title="Dog Tax Rate Comparison — All Municipalities">
+          <p className="mb-4 text-sm font-semibold text-slate-600">
+            The same dog is taxed differently depending on where you live. Tax is automatically recalculated when you transfer.
+          </p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 text-left">
+                  <th className="pb-3 pr-4 text-xs font-black uppercase tracking-wide text-slate-500">Municipality</th>
+                  <th className="pb-3 pr-4 text-xs font-black uppercase tracking-wide text-slate-500">1st Dog</th>
+                  <th className="pb-3 pr-4 text-xs font-black uppercase tracking-wide text-slate-500">2nd Dog</th>
+                  <th className="pb-3 text-xs font-black uppercase tracking-wide text-slate-500">Listenhund</th>
+                </tr>
+              </thead>
+              <tbody>
+                {taxComparison.map((row) => (
+                  <tr key={row.code} className="border-b border-slate-100 last:border-0">
+                    <td className="py-3 pr-4 font-black text-slate-900">{row.municipality}</td>
+                    <td className="py-3 pr-4 font-semibold text-slate-800">{row.basic1 != null ? `€${row.basic1}` : "—"}</td>
+                    <td className="py-3 pr-4 font-semibold text-slate-800">{row.basic2 != null ? `€${row.basic2}` : "—"}</td>
+                    <td className="py-3 font-semibold text-orange-700">{row.dangerous != null ? `€${row.dangerous}` : "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-3 text-xs font-semibold text-slate-500">Annual amounts in EUR. Source: Berlin Hundesteuersatzung · Hamburg Hundesteuergesetz 1995</p>
+        </SectionCard>
+      )}
 
       <div className="grid gap-4 md:grid-cols-3">
         <button className="rounded-lg border border-slate-200 bg-white p-5 text-left shadow-sm hover:border-blue-300" type="button" onClick={() => setActivePage("register-dog")}>

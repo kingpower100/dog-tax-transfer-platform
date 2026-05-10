@@ -4,6 +4,7 @@ import AlertBox from "../components/AlertBox.jsx";
 import PageHeader from "../components/PageHeader.jsx";
 import SectionCard from "../components/SectionCard.jsx";
 import TechnicalDetails from "../components/TechnicalDetails.jsx";
+import TransferFlow from "../components/TransferFlow.jsx";
 
 const DEMO_CITIZEN_USER_ID = 1001;
 
@@ -538,6 +539,13 @@ export default function TransferStatus({ selectedTenant, selectedMunicipalityId,
           <div className="space-y-4">
             <SectionCard title="Status Timeline">
               <Timeline transfer={selectedTransfer} />
+            </SectionCard>
+            <SectionCard title="Visual Workflow (Audit Trail)">
+              <TransferFlow 
+                source={selectedTransfer.from_municipality} 
+                target={selectedTransfer.to_municipality} 
+                transferId={selectedTransfer.id} 
+              />
             </SectionCard>
             <TechnicalDetails data={selectedTransfer} title="Technical details" />
           </div>

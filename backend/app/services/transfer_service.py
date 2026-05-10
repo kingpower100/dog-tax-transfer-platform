@@ -766,6 +766,21 @@ def create_workflow_transfer_request(db: Session, payload: TransferCreateRequest
         raise HTTPException(status_code=404, detail="Unknown source or target municipality")
     if target.id == source.id:
         raise HTTPException(status_code=400, detail="Target municipality must differ from source municipality")
+
+    # Proactive duplicate check in target municipality
+    duplicate_in_target = db.scalar(
+        select(Dog).where(
+            Dog.municipality_id == target.id,
+            Dog.chip_number == dog.chip_number,
+            Dog.status == "active",
+        )
+    )
+    if duplicate_in_target is not None:
+        raise HTTPException(
+            status_code=409,
+            detail=f"The dog with chip {dog.chip_number} is already registered as active in {target.name}.",
+        )
+
     insurance_number = (payload.insurance_number or "").strip()
     if not insurance_number:
         raise HTTPException(status_code=400, detail="Insurance number is required.")

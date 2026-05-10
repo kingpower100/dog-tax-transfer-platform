@@ -15,6 +15,7 @@ from app.services.dog_registration_service import (
 from app.services.tax_service import calculate_dog_tax
 from app.services.transfer_service import get_transfer_form_data
 from app.services.tenant_service import resolve_tenant
+from app.services.notice_service import generate_registration_notice
 
 
 router = APIRouter()
@@ -218,3 +219,12 @@ def finance_reject_registration(
     db: Session = Depends(get_db),
 ):
     return reject_new_dog_registration(db, registration_id, action)
+
+
+@router.get("/registrations/{registration_id}/notice")
+def get_registration_notice(
+    registration_id: int,
+    db: Session = Depends(get_db),
+):
+    notice_text = generate_registration_notice(db, registration_id)
+    return {"notice": notice_text}

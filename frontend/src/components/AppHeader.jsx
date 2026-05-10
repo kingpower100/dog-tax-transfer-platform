@@ -10,7 +10,7 @@ export default function AppHeader({
   selectedTenant,
   setShowLanding,
 }) {
-  const roleLabel = selectedRole === "CITIZEN" ? "Citizen" : "Municipality Officer";
+  const roleLabel = selectedRole === "CITIZEN" ? "Citizen" : selectedRole === "PLATFORM_ADMIN" ? "Platform Admin" : "Municipality Officer";
 
   return (
     <header className="border-b border-slate-200 bg-white shadow-sm">
@@ -48,7 +48,7 @@ export default function AppHeader({
           <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-black uppercase tracking-wide text-slate-600">
             {roleLabel}
           </span>
-          {selectedRole === "MUNICIPALITY" ? (
+          {selectedRole === "MUNICIPALITY" || selectedRole === "PLATFORM_ADMIN" ? (
             <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-black uppercase tracking-wide text-slate-600">
               {selectedTenant}
             </span>

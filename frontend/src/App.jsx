@@ -10,6 +10,14 @@ import RegisterDog from "./pages/RegisterDog.jsx";
 import TransferStatus from "./pages/TransferStatus.jsx";
 import CitizenHome from "./pages/CitizenHome.jsx";
 import LandingPage from "./pages/LandingPage.jsx";
+import PlatformOverview from "./pages/PlatformOverview.jsx";
+import Dashboard from "./pages/Dashboard.jsx";
+import Tenants from "./pages/Tenants.jsx";
+import Dogs from "./pages/Dogs.jsx";
+import Registrations from "./pages/Registrations.jsx";
+import Transfers from "./pages/Transfers.jsx";
+import TaxRules from "./pages/TaxRules.jsx";
+import AuditLogs from "./pages/AuditLogs.jsx";
 
 const DEMO_CITIZEN_USER_ID = 1001;
 
@@ -23,6 +31,16 @@ const rolePages = {
   MUNICIPALITY: [
     { id: "outgoing-transfers", label: "Outgoing Transfers" },
     { id: "incoming-transfers", label: "Incoming Transfers" },
+  ],
+  PLATFORM_ADMIN: [
+    { id: "platform-overview", label: "Platform Overview" },
+    { id: "dashboard", label: "Dashboard" },
+    { id: "tenants", label: "Municipalities" },
+    { id: "all-dogs", label: "All Dogs" },
+    { id: "all-registrations", label: "Registrations" },
+    { id: "all-transfers", label: "All Transfers" },
+    { id: "tax-rules", label: "Tax Rules" },
+    { id: "audit-logs", label: "Audit Logs" },
   ],
 };
 
@@ -117,8 +135,26 @@ export default function App() {
         return <IncomingTransfers {...common} />;
       case "outgoing-transfers":
         return <OutgoingTransfers {...common} />;
+      case "platform-overview":
+        return <PlatformOverview {...common} />;
+      case "dashboard":
+        return <Dashboard {...common} />;
+      case "tenants":
+        return <Tenants {...common} />;
+      case "all-dogs":
+        return <Dogs {...common} />;
+      case "all-registrations":
+        return <Registrations {...common} />;
+      case "all-transfers":
+        return <Transfers {...common} />;
+      case "tax-rules":
+        return <TaxRules {...common} />;
+      case "audit-logs":
+        return <AuditLogs {...common} />;
       default:
-        return selectedRole === "CITIZEN" ? <CitizenHome {...common} /> : <OutgoingTransfers {...common} />;
+        if (selectedRole === "CITIZEN") return <CitizenHome {...common} />;
+        if (selectedRole === "PLATFORM_ADMIN") return <PlatformOverview {...common} />;
+        return <OutgoingTransfers {...common} />;
     }
   }
 
@@ -143,6 +179,15 @@ export default function App() {
       setSelectedMunicipalityName(municipality.name);
       setSelectedMunicipalityId(municipality.id);
       setActivePage("incoming-transfers");
+      saveAccessContext(context);
+    }
+
+    if (role === "PLATFORM_ADMIN") {
+      const context = { selectedRole: "PLATFORM_ADMIN", selectedMunicipality: "All", selectedMunicipalityCode: "ALL" };
+      setSelectedRole("PLATFORM_ADMIN");
+      setSelectedTenant("ALL");
+      setSelectedMunicipalityName("All Municipalities");
+      setActivePage("platform-overview");
       saveAccessContext(context);
     }
 

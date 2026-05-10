@@ -60,3 +60,15 @@ def verify_audit_logs(
     if current_role != "platform_admin":
         raise HTTPException(status_code=403, detail="Audit chain verification is platform-admin only")
     return verify_audit_chain(db)
+
+
+@router.get("/transfers/{transfer_id}/timeline", response_model=list[AuditLogOut])
+def get_transfer_timeline(
+    transfer_id: int,
+    db: Session = Depends(get_db),
+):
+    return db.scalars(
+        select(AuditLog)
+        .where(AuditLog.transfer_request_id == transfer_id)
+        .order_by(AuditLog.timestamp.asc())
+    ).all()

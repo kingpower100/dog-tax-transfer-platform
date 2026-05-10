@@ -101,7 +101,7 @@ export default function LandingPage({ onOpenRole, municipalities = [] }) {
               Move your dog tax registration from one city to another without submitting the same dog and owner information twice.
             </p>
 
-            <div className="mt-10 grid w-full max-w-4xl gap-3 sm:grid-cols-3">
+            <div className="mt-10 grid w-full max-w-4xl gap-3 sm:grid-cols-2 lg:grid-cols-3">
               <button
                 type="button"
                 onClick={() => onOpenRole("CITIZEN")}
@@ -136,6 +136,22 @@ export default function LandingPage({ onOpenRole, municipalities = [] }) {
                   </div>
                 </button>
               ))}
+
+              <button
+                type="button"
+                onClick={() => onOpenRole("PLATFORM_ADMIN")}
+                className="rounded-2xl border border-white/30 bg-white/10 p-5 text-left shadow-lg backdrop-blur-[2px] transition hover:border-emerald-300/70 hover:bg-white/15"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-white/30 bg-white/10 text-emerald-200">
+                    <ShieldIcon className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-white">Platform Admin</h3>
+                    <p className="mt-1 text-sm leading-6 text-white/90">View all transfers, audit logs, and tax rules.</p>
+                  </div>
+                </div>
+              </button>
             </div>
 
             <div className="mt-10 w-full max-w-6xl rounded-3xl border border-white/20 bg-white/5 p-8 text-left shadow-xl backdrop-blur-[2px]">

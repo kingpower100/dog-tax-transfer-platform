@@ -420,7 +420,7 @@ def seed_database(reset: bool = False) -> None:
             BERLIN_SOURCE_URL,
         )
         for municipality, first, second, third, dangerous in [
-            (hannover, 132, 240, 240, 600),
+            (hannover, 150, 276, 276, 720),
             (leverkusen, 156, 204, 252, 720),
             (freiburg, 102, 204, 204, 600),
         ]:
@@ -443,7 +443,7 @@ def seed_database(reset: bool = False) -> None:
             berlin,
             "BASIC",
             3,
-            240,
+            180,
             "2026-01-01",
             BERLIN_SOURCE_URL,
         )

@@ -86,15 +86,13 @@ function GroupPill({ status }) {
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
-function ProfileCard({ citizen, currentCitizen }) {
-  const name = citizen?.user?.name || (currentCitizen ? `${currentCitizen.firstName} ${currentCitizen.lastName}` : "Bürger");
-  const email = citizen?.user?.email || currentCitizen?.dogs?.[0]?.name || "—";
+function ProfileCard({ citizen }) {
+  const name = citizen?.user?.name || "Bürger";
+  const email = citizen?.user?.email || "—";
   const owner = citizen?.owner;
   const address = owner
     ? `${owner.street} ${owner.house_number}, ${owner.postal_code} ${owner.city}`
-    : currentCitizen?.street
-      ? `${currentCitizen.street}, ${currentCitizen.plz} ${currentCitizen.city}`
-      : "—";
+    : "—";
   const initials = name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
 
   return (
@@ -129,7 +127,7 @@ function ProfileCard({ citizen, currentCitizen }) {
       <div className="shrink-0 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-center text-xs">
         <div className="font-black uppercase tracking-wide text-slate-400">Steuerpflichtiger</div>
         <div className="mt-1 font-black text-slate-700">
-          OWN-{citizen?.user?.id || currentCitizen?.id || "—"}
+          OWN-{owner?.id || "—"}
         </div>
         <StatusBadge value="active" />
       </div>
@@ -396,7 +394,7 @@ export default function CitizenHome({
       {error ? <AlertBox type="error">{error}</AlertBox> : null}
 
       {/* 1 ─ Profile */}
-      <ProfileCard citizen={citizen} currentCitizen={currentCitizen} />
+      <ProfileCard citizen={citizen} />
 
       {/* 2 ─ My Dogs */}
       <section>

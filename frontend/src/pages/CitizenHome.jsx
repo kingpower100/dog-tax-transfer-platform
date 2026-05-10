@@ -452,7 +452,7 @@ export default function CitizenHome({
             description="Melden Sie einen neuen Hund bei Ihrer Gemeinde zur Hundesteuer an. Die Steuer wird automatisch nach behördlicher Genehmigung berechnet."
             legal="§ 1 Hundesteuersatzung"
             duration="ca. 5 Minuten online"
-            onClick={() => setActivePage("register-dog")}
+            onClick={() => window.location.href = '/anmeldung.html'}
           />
           <ServiceTile
             icon={<SendIcon className="h-6 w-6" />}
@@ -461,10 +461,7 @@ export default function CitizenHome({
             description="Beim Umzug in eine andere Stadt wird Ihre Hundesteuerregistrierung einmalig übermittelt — kein doppeltes Einreichen von Daten."
             legal="EU Once-Only Prinzip (seit 2023)"
             duration="ca. 3 Minuten online"
-            onClick={() => {
-              if (dogs[0]) startMove(dogs[0].registration_id);
-              else setActivePage("request-transfer");
-            }}
+            onClick={() => window.location.href = '/ummeldung.html'}
           />
         </div>
       </section>

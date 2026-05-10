@@ -5,7 +5,6 @@ import {
   CheckBuildingIcon,
   FileIcon,
   LandmarkIcon,
-  SendIcon,
   ShieldIcon,
   UserIcon,
 } from "../components/Icons.jsx";
@@ -33,11 +32,7 @@ const transferSteps = [
   { label: "Tax recalculated & transfer complete", color: "bg-green-100 text-green-800 border-green-200" },
 ];
 
-export default function LandingPage({ onOpenRole, municipalities = [] }) {
-  const visibleMunicipalities = municipalities.filter((municipality) =>
-    ["BERLIN", "HANNOVER"].includes(municipality.code),
-  );
-
+export default function LandingPage({ onOpenRole }) {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       {/* Sticky top nav */}
@@ -98,27 +93,6 @@ export default function LandingPage({ onOpenRole, municipalities = [] }) {
             aria-hidden="true"
           />
 
-          {/* Flow labels */}
-          <div
-            className="pointer-events-none absolute inset-x-0 top-8 z-10 hidden justify-center px-6 lg:flex"
-            aria-hidden="true"
-          >
-            <div className="flex w-full max-w-4xl items-center justify-between gap-4">
-              {["Source Municipality", "Secure Transfer Hub", "Destination Municipality"].map((label, index) => (
-                <div
-                  key={label}
-                  className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-black uppercase tracking-wide text-white/60"
-                >
-                  <ShieldIcon className="h-4 w-4 text-emerald-300" />
-                  {label}
-                  {index < 2 ? (
-                    <span className="ml-2 hidden h-px w-10 bg-white/20 xl:inline-block" />
-                  ) : null}
-                </div>
-              ))}
-            </div>
-          </div>
-
           {/* Main hero content */}
           <div className="relative z-10 mx-auto flex min-h-[60vh] max-w-6xl flex-col items-center justify-center text-center">
             <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-wide text-emerald-200 backdrop-blur">
@@ -168,54 +142,6 @@ export default function LandingPage({ onOpenRole, municipalities = [] }) {
                   <div>
                     <h3 className="text-base font-black text-white">Authority Portal</h3>
                     <p className="mt-0.5 text-xs leading-5 text-white/75">Manage transfers & administrative overview.</p>
-                  </div>
-                </div>
-              </button>
-            </div>
-                  <div>
-                    <h3 className="text-base font-black text-white">Citizen</h3>
-                    <p className="mt-0.5 text-xs leading-5 text-white/75">Register or transfer your dog.</p>
-                  </div>
-                </div>
-              </button>
-
-              {/* Municipality officers */}
-              {visibleMunicipalities.map((municipality) => (
-                <button
-                  key={municipality.id}
-                  type="button"
-                  onClick={() => onOpenRole("MUNICIPALITY", municipality)}
-                  className="group rounded-2xl border border-white/20 bg-white/10 p-5 text-left shadow-lg backdrop-blur-sm transition hover:border-emerald-300/60 hover:bg-white/15"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-emerald-200 transition group-hover:bg-white/20">
-                      {municipality.code === "BERLIN" ? (
-                        <SendIcon className="h-6 w-6" />
-                      ) : (
-                        <CheckBuildingIcon className="h-6 w-6" />
-                      )}
-                    </div>
-                    <div>
-                      <h3 className="text-base font-black text-white">{municipality.name} Officer</h3>
-                      <p className="mt-0.5 text-xs leading-5 text-white/75">Process transfer approvals.</p>
-                    </div>
-                  </div>
-                </button>
-              ))}
-
-              {/* Platform admin */}
-              <button
-                type="button"
-                onClick={() => onOpenRole("PLATFORM_ADMIN")}
-                className="group rounded-2xl border border-white/20 bg-white/10 p-5 text-left shadow-lg backdrop-blur-sm transition hover:border-purple-300/60 hover:bg-white/15"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-purple-200 transition group-hover:bg-white/20">
-                    <ShieldIcon className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <h3 className="text-base font-black text-white">Platform Admin</h3>
-                    <p className="mt-0.5 text-xs leading-5 text-white/75">Audit logs & platform overview.</p>
                   </div>
                 </div>
               </button>

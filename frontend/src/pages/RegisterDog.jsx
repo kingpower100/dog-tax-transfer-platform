@@ -88,20 +88,42 @@ export default function RegisterDog({ selectedTenant, tenants = [], currentUserI
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-
-  const currentStep = useMemo(() => {
-    if (result) return 2;
-    const ownerFilled = form.owner.first_name.trim() && form.owner.last_name.trim() && form.owner.street.trim();
-    const dogFilled = form.dog.name.trim() && form.dog.chip_number.trim();
-    if (ownerFilled && dogFilled) return 2;
-    if (ownerFilled) return 1;
-    return 0;
-  }, [form, result]);
+  const [loading, setLoading] = useState(false);
 
   const context = useMemo(
     () => demoContext({ role: "citizen", municipalityId, userId }),
     [municipalityId, userId],
   );
+
+  useEffect(() => {
+    async function loadCitizen() {
+      setLoading(true);
+      try {
+        const data = await apiGet("/citizen/me", selectedTenant, context);
+        if (data.owner) {
+          setForm((f) => ({
+            ...f,
+            owner: {
+              first_name: data.owner.first_name || "",
+              last_name: data.owner.last_name || "",
+              date_of_birth: data.owner.date_of_birth || "",
+              street: data.owner.street || "",
+              house_number: data.owner.house_number || "",
+              postal_code: data.owner.postal_code || "",
+              city: data.owner.city || "",
+              email: data.user.email || "",
+              phone: "",
+            },
+          }));
+        }
+      } catch (err) {
+        console.error("Failed to load citizen data", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadCitizen();
+  }, [selectedTenant, context]);
 
   function updateOwner(key, value) {
     setForm((f) => ({ ...f, owner: { ...f.owner, [key]: value } }));

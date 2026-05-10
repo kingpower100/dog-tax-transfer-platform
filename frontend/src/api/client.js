@@ -32,8 +32,9 @@ function buildHeaders(tenantCode) {
     "Content-Type": "application/json",
   };
 
-  if (tenantCode) {
-    headers["X-Mandant-ID"] = tenantCode;
+  const code = typeof tenantCode === 'string' ? tenantCode : (tenantCode?.code || null);
+  if (code) {
+    headers["X-Mandant-ID"] = code;
   }
 
   return headers;

@@ -247,9 +247,11 @@ export default function App() {
 
   // Called from CitizenSwitcherBar to switch user
   async function switchCitizen(citizen) {
+    console.log("Switching to citizen:", citizen);
     setCurrentUserId(citizen.id);
     try {
       const data = await apiGet("/citizen/me", null, demoContext({ role: "citizen", userId: citizen.id }));
+      console.log("Fetched profile data:", data);
       const tenant = tenants.find(t => t.id === data.owner?.municipality_id) || { code: "BERLIN", name: "Berlin", id: 2 };
       
       setSelectedTenant(tenant.code);
@@ -257,6 +259,7 @@ export default function App() {
       setSelectedMunicipalityId(tenant.id);
       setCurrentCitizen({ ...citizen, ...data });
     } catch (err) {
+      console.error("Failed to load full citizen profile", err);
       setCurrentCitizen(citizen);
     }
   }

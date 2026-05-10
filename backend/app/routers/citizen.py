@@ -68,7 +68,7 @@ def _tax_rule_reference(rule: DogTaxRule | None) -> str | None:
     if rule is None:
         return None
     position = f"position {rule.dog_position}" if rule.dog_position is not None else "all positions"
-    return f"Rule #{rule.id} - {rule.rule_type}, {position}, valid from {rule.valid_from}"
+    return f"Rule #{rule.id} - {rule.condition}, {position}, valid from {rule.valid_from}"
 
 
 def _active_transfer(db: Session, registration: Registration) -> TransferRequest | None:

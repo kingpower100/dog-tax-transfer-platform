@@ -215,9 +215,14 @@ export default function App() {
     setActivePage("citizen-home");
     setShowCitizenLogin(false);
     
-    // Fetch detailed profile from backend
+    // Fetch detailed profile from backend to get correct municipality
     try {
-      const data = await apiGet("/citizen/me", "BERLIN", demoContext({ role: "citizen", userId: citizen.id }));
+      const data = await apiGet("/citizen/me", null, demoContext({ role: "citizen", userId: citizen.id }));
+      const tenant = tenants.find(t => t.id === data.owner?.municipality_id) || { code: "BERLIN", name: "Berlin", id: 2 };
+      
+      setSelectedTenant(tenant.code);
+      setSelectedMunicipalityName(tenant.name);
+      setSelectedMunicipalityId(tenant.id);
       setCurrentCitizen({ ...citizen, ...data });
     } catch (err) {
       console.error("Failed to load full citizen profile", err);
@@ -244,7 +249,12 @@ export default function App() {
   async function switchCitizen(citizen) {
     setCurrentUserId(citizen.id);
     try {
-      const data = await apiGet("/citizen/me", "BERLIN", demoContext({ role: "citizen", userId: citizen.id }));
+      const data = await apiGet("/citizen/me", null, demoContext({ role: "citizen", userId: citizen.id }));
+      const tenant = tenants.find(t => t.id === data.owner?.municipality_id) || { code: "BERLIN", name: "Berlin", id: 2 };
+      
+      setSelectedTenant(tenant.code);
+      setSelectedMunicipalityName(tenant.name);
+      setSelectedMunicipalityId(tenant.id);
       setCurrentCitizen({ ...citizen, ...data });
     } catch (err) {
       setCurrentCitizen(citizen);
